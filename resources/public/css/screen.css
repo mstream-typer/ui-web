@@ -1,0 +1,40 @@
+span.line {
+  display: block;
+}
+
+#exercise {
+  font-size: 4em;
+  letter-spacing: 0.05em;
+  line-height: 1.25em;
+}
+
+#exercise .incorrect {
+  background: #FF0000;
+  color: #880000 !important;
+}
+
+#exercise .after-incorrect {
+  background: #FF8888;
+}
+
+#exercise .cursor {
+  border-bottom-width: 3px;
+  border-bottom-style: solid;
+  border-bottom-color: #00FF00;
+}
+
+#exercise .character-untyped {
+  color: #888888;
+}
+
+#exercise .character-typed {
+  color: #000000;
+}
+
+#exercise .whitespace-untyped {
+  color: #888888;
+}
+
+#exercise .whitespace-typed {
+  color: #FFFFFF;
+}
