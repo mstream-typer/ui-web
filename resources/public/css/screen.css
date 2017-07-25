@@ -1,11 +1,14 @@
 span.line {
   display: block;
+  min-height: 1.25em;
 }
 
 #exercise {
   font-size: 4em;
   letter-spacing: 0.05em;
   line-height: 1.25em;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
 }
 
 #exercise .incorrect {

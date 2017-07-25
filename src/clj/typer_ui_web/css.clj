@@ -5,12 +5,15 @@
 
 (defstyles screen
   [:span.line
-   {:display "block"}]
+   {:display "block"
+    :min-height (em 1.25)}]
 
   ["#exercise"
    {:font-size (em 4)
     :letter-spacing (em 0.05)
-    :line-height (em 1.25)}
+    :line-height (em 1.25)
+    :padding-bottom (em 0.25)
+    :padding-top (em 0.25)}
 
    [".incorrect"
     {:background "#FF0000"

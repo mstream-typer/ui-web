@@ -5,8 +5,16 @@
             [clojure.string :as str]))
 
 
-(s/def ::margin
+(s/def ::sheet-size
   (s/and int? #(< 0 %)))
+
+
+(s/def ::sheet-width
+  ::sheet-size)
+
+
+(s/def ::sheet-height
+  ::sheet-size)
 
 
 (s/def ::result
@@ -55,36 +63,38 @@
 
 
 (s/fdef
- words-fit-margin?
+ words-fit-sheet-width?
  :args (s/cat :text ::db/exercise-text
-              :margin ::margin)
+              :sheet-width ::sheet-width)
  :ret boolean?
  :fn #(let [in-text (-> % :args :text)
-            in-margin (-> % :args :margin)
-            out-valid (% :ret)]
-        (= out-valid 
+            sheet-width (-> % :args :sheet-width)
+            result (% :ret)]
+        (= result 
            (->> (partition-by (partial s/valid? ::db/whitespace) in-text)
-                (filter (complement (comp (partial s/valid? ::db/whitespace) first)))
+                (filter (complement (comp (partial s/valid? ::db/whitespace)
+                                          first)))
                 (map count)
                 (cons 0)
                 (apply max)
-                (> in-margin)))))
-(def words-fit-margin?
+                (> sheet-width)))))
+(def words-fit-sheet-width?
   (memoize
-   (fn [text margin]
+   (fn [text sheet-width]
      (->> (partition-by (partial s/valid? ::db/whitespace) text)
-          (filter (complement (comp (partial s/valid? ::db/whitespace) first)))
+          (filter (complement (comp (partial s/valid? ::db/whitespace)
+                                    first)))
           (map count)
           (cons 0)
           (apply max)
-          (> margin)))))
+          (> sheet-width)))))
 
 
 (s/def ::fails-on-too-long-input
   #(let [in-text (-> % :args :text)
-         margin (-> % :args :margin)
+         sheet-width (-> % :args :sheet-width)
          result (-> % :ret ::result)]
-     (= result (if (words-fit-margin? in-text margin)
+     (= result (if (words-fit-sheet-width? in-text sheet-width)
                  :success
                  :failure))))
 
@@ -111,7 +121,7 @@
 (s/fdef
  format-text
  :args (s/cat :text ::db/exercise-text  
-              :margin ::margin)
+              :sheet-width ::sheet-width)
  :ret (s/keys :req [::result]
               :opt [::value])
  :fn (s/and ::keeps-same-length
@@ -119,12 +129,12 @@
             ::breaks-new-lines))
 (def format-text
   (memoize
-   (fn [text margin]
-     (if (not (words-fit-margin? text margin))
+   (fn [text sheet-width]
+     (if (not (words-fit-sheet-width? text sheet-width))
        {::result :failure}
        (loop [result []
               remaining text]
-         (let [[next-row other-rows] (split-at (next-row-index (take margin
+         (let [[next-row other-rows] (split-at (next-row-index (take sheet-width
                                                                      remaining))
                                                remaining)
                next-result (conj result next-row)]
@@ -176,7 +186,7 @@
                   identity
                   not) (str/includes? result "after-incorrect"))
                ((if (= char-index (count text-actual))
-                  identity
+                  identity 
                   not) (str/includes? result "cursor"))))))
 (def character-class
   (memoize
@@ -201,20 +211,52 @@
                                     (count text-actual)) "cursor")]))))))
 
 
+(defn current-line
+  ([formatted-text character-index]
+   (current-line formatted-text character-index 0))
+  ([remaining-rows character-index characters-count]
+   (let [[row-index row] (first remaining-rows)
+         next-chars-count (+ characters-count (count row))
+         next-remaining-rows (rest remaining-rows)]
+     (if (or
+          (empty? next-remaining-rows)
+          (< (inc character-index) next-chars-count))
+       row-index
+       (recur next-remaining-rows
+              character-index
+              next-chars-count))))) 
+
+
 (defn main-panel []
-  (let [text-expected @(rf/subscribe [:exercise-text-expected])
+  (let [sheet-width 20
+        sheet-height 5
+        text-expected @(rf/subscribe [:exercise-text-expected])
         text-actual @(rf/subscribe [:exercise-text-actual])
-        formatted-text (-> text-expected (format-text 20)
+        formatted-text (-> text-expected
+                           (format-text sheet-width)
                            ::value
                            index-formatted-text)
         whitespace-symbols {\space \u23b5
-                            \newline \u21b5}]
+                            \newline \u21b5}
+        current-line-idx (current-line formatted-text
+                                       (dec (count text-actual)))
+        sheet-middle (quot (dec sheet-height) 2)]
     [:div#exercise.ui.raised.segment
-     (for [line-entry formatted-text]
-       (let [[line-idx line] line-entry]
-         [:span.line {:key (str "line-" line-idx)}
-          (for [ch-entry line]
-            (let [[ch-idx ch] ch-entry]
-              [:span {:key (str "char-" ch-idx)
-                      :class (character-class text-expected text-actual ch-idx)}
-               (whitespace-symbols ch ch)]))]))]))
+     (for [idx (range sheet-height)]
+       (let [line-idx (- (+ current-line-idx idx) sheet-middle)]
+         (cond
+           (neg? line-idx)
+           ^{:key line-idx}
+           [:span.line]
+           (>= line-idx (count formatted-text))
+           ^{:key line-idx}
+           [:span.line]
+           :else
+           ^{:key line-idx}
+           [:span.line
+            (for [[ch-idx ch] (second (formatted-text line-idx))]
+              ^{:key ch-idx}
+              [:span {:class (character-class text-expected
+                                              text-actual
+                                              ch-idx)}
+               (whitespace-symbols ch ch)])])))])) 

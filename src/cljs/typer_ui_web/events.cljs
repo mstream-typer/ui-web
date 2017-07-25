@@ -7,7 +7,8 @@
   [\x \a \a \a \a \a \a \space \a \a \a \a \a \a \newline
    \b \b \b \b \b \b \b \b \b \b \b \b \space \b \b \b \b \b \b \b \space \b \b \b \b \newline
    \c \c \c \c \c \c \c \c \c \c \c \c \c \space \c \c \c \c \c
-   \d \d \d \space \d \d \d \space \d \d \d \space \d \d \d])
+   \d \d \d \space \d \d \d \space \d \d \d \space \d \d \d \newline
+   \e \e \e \e \e \e \e \e \e \e])
 
 
 (rf/reg-event-db
