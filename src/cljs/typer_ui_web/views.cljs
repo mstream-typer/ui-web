@@ -240,23 +240,33 @@
                             \newline \u21b5}
         current-line-idx (current-line formatted-text
                                        (dec (count text-actual)))
-        sheet-middle (quot (dec sheet-height) 2)]
-    [:div#exercise.ui.raised.segment
-     (for [idx (range sheet-height)]
-       (let [line-idx (- (+ current-line-idx idx) sheet-middle)]
-         (cond
-           (neg? line-idx)
-           ^{:key line-idx}
-           [:span.line]
-           (>= line-idx (count formatted-text))
-           ^{:key line-idx}
-           [:span.line]
-           :else
-           ^{:key line-idx}
-           [:span.line
-            (for [[ch-idx ch] (second (formatted-text line-idx))]
-              ^{:key ch-idx}
-              [:span {:class (character-class text-expected
-                                              text-actual
-                                              ch-idx)}
-               (whitespace-symbols ch ch)])])))])) 
+        sheet-middle (quot (dec sheet-height) 2)
+        progress (-> (count text-actual)
+                     (* 100)
+                     (/ (count text-expected))
+                     (str "%"))]
+    [:div
+     [:div.ui.menu]
+     [:div#exercise.ui.raised.container.segment
+      [:div.ui.top.attached.progress.success
+       [:div.bar {:style {:width progress}}]]
+      (for [idx (range sheet-height)]
+        (let [line-idx (- (+ current-line-idx idx) sheet-middle)]
+          (cond
+            (neg? line-idx)
+            ^{:key line-idx}
+            [:span.line]
+            (>= line-idx (count formatted-text))
+            ^{:key line-idx}
+            [:span.line]
+            :else
+            ^{:key line-idx}
+            [:span.line
+             (for [[ch-idx ch] (second (formatted-text line-idx))]
+               ^{:key ch-idx}
+               [:span {:class (character-class text-expected
+                                               text-actual
+                                               ch-idx)}
+                (whitespace-symbols ch ch)])])))
+      [:div.ui.bottom.attached.progress.success
+       [:div.bar {:style {:width progress}}]]]])) 
