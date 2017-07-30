@@ -61,6 +61,7 @@
 
 
 (def default-db
-  {::exercise
-   {::text {::expected []
-            ::actual []}}})
+  {::exercise {::text {::expected []
+                       ::actual []}}
+   ::ui {::exercise {::sheet {::height 5
+                              ::width 20}}}})

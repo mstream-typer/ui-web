@@ -4,7 +4,9 @@
             [clojure.test :as test :include-macros true]
             [typer-ui-web.events :as events]))
 
+
 (test/deftest character-typed-test
   (let [result (first (stest/check `events/character-typed))]
-    (test/is (and (-> result ::tc/ret :result) (not (result :failure)))
+    (test/is (and (-> result ::tc/ret :result)
+                  (not (result :failure)))
              result)))
