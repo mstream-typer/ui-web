@@ -58,8 +58,8 @@
              :source-paths ["src/cljs"]
              :compiler     {:main            typer-ui-web.core
                             :output-to       "resources/public/js/compiled/app.js"
-                            :optimizations   :none
-                            :closure-defines {goog.DEBUG true}
+                            :optimizations   :advanced
+                            :closure-defines {goog.DEBUG false}
                             :pretty-print    false}}
             
             {:id           "test"

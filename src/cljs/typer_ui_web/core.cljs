@@ -2,8 +2,7 @@
   (:require [reagent.core :as reagent]
             [re-frame.core :as rf]
             [re-frisk.core :refer [enable-re-frisk!]]
-            [typer-ui-web.events]
-            [typer-ui-web.subs]
+            [typer-ui-web.events :as events]
             [typer-ui-web.views :as views]
             [typer-ui-web.config :as config]))
 
@@ -22,8 +21,8 @@
 
 
 (defn ^:export init []
-  (rf/dispatch-sync [:db-initialized])
-  (rf/dispatch-sync [:exercise-loaded])
+  (rf/dispatch-sync [::events/db-initialized])
+  (rf/dispatch-sync [::events/exercise-loaded])
   (dev-setup)
   (mount-root))
 

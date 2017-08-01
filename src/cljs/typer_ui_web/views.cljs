@@ -1,5 +1,6 @@
 (ns typer-ui-web.views
   (:require [typer-ui-web.db :as db]
+            [typer-ui-web.events :as events]
             [typer-ui-web.subs :as subs]
             [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
@@ -145,7 +146,7 @@
    [:div.ui.large.menu
     [:div.right.menu
      [:a.item
-      {:on-click #(rf/dispatch [:login-menu-button-pressed])}
+      {:on-click #(rf/dispatch [::events/login-menu-button-pressed])}
       "Sign In"]]]])
 
 
@@ -201,7 +202,7 @@
          {:name "username"
           :type "text"
           :value username 
-          :on-change #(rf/dispatch [:login-menu-username-changed
+          :on-change #(rf/dispatch [::events/login-menu-username-changed
                                     (-> %
                                         .-target
                                         .-value)])}]]
@@ -211,16 +212,16 @@
          {:name "password"
           :type "password"
           :value password
-          :on-change #(rf/dispatch [:login-menu-password-changed
+          :on-change #(rf/dispatch [::events/login-menu-password-changed 
                                     (-> %
                                         .-target
                                         .-value)])}]]
      [:div.actions
       [:div.ui.black.deny.button
-       {:on-click #(rf/dispatch [:cancel-login-menu-button-pressed])}
+       {:on-click #(rf/dispatch [::events/cancel-login-menu-button-pressed])}
        "Cancel"]
       [:div.ui.positive.right.labeled.icon.button
-       {:on-click #(rf/dispatch [:cancel-login-menu-button-pressed])}
+       {:on-click #(rf/dispatch [::events/cancel-login-menu-button-pressed])}
        "Sign In"
        [:i.sign.in.icon]]]]]])) 
 
@@ -238,14 +239,14 @@
   [:div
    [main-menu]
    [:button.ui.button
-    {:on-click #(rf/dispatch [:navigated-to-exercise])}
+    {:on-click #(rf/dispatch [::events/navigated-to-exercise])}
     "Start"]])
 
 
 (defn exercise-view []
   [:div
    [:button.ui.button
-    {:on-click #(rf/dispatch [:navigated-to-home])} 
+    {:on-click #(rf/dispatch [::events/navigated-to-home])} 
     "Back"]
    [exercise-panel]])
 
@@ -266,7 +267,7 @@
 (defn key-press-listener [e]
   (let [key->char {"Backspace" \backspace
                    "Enter" \newline}]
-   (rf/dispatch [:character-typed (-> e (.-key) (#(get key->char % %)))])))
+   (rf/dispatch [::events/character-typed (-> e (.-key) (#(get key->char % %)))])))
 
 
 (defonce register-keypress-listener 

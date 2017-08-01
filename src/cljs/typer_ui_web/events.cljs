@@ -3,28 +3,15 @@
             [clojure.spec.alpha :as s]
             [typer-ui-web.db :as db]))
 
+
 (def dummy-text
-  [\x \a \a \a \a \a \a \space \a \a \a \a \a \a \newline
-   \b \b \b \b \b \b \b \b \b \b \b \b \space \b \b \b \b \b \b \b \space \b \b \b \b \newline
-   \c \c \c \c \c \c \c \c \c \c \c \c \c \space \c \c \c \c \c
-   \d \d \d \space \d \d \d \space \d \d \d \space \d \d \d \newline
-   \e \e \e \e \e \e \e \e \e \e])
-
-
-(rf/reg-event-db
- :db-initialized
- (fn  [_ _]
-   db/default-db))
-
-
-(rf/reg-event-db
- :exercise-loaded
- (fn [db _]
-   (-> db
-       (assoc-in [::db/exercise ::db/text ::db/expected]
-                 dummy-text)
-       (assoc-in [::db/exercise ::db/text ::db/actual]
-                 []))))
+  (concat "aaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa"
+          [\newline]
+          "bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb"
+          [\newline]
+          "cccccccccc ccccccccccc ccccccccccc ccccccccccc"
+          [\newline]
+          "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"))
 
 
 (s/def ::parameterless-event
@@ -37,6 +24,22 @@
 
 (s/def ::character-typed
   (s/tuple keyword? (s/and char?)))
+
+
+(rf/reg-event-db
+ ::db-initialized
+ (fn [_ _]
+   db/default-db))
+
+
+(rf/reg-event-db
+ ::exercise-loaded
+ (fn [db _]
+   (-> db
+       (assoc-in [::db/exercise ::db/text ::db/expected]
+                 dummy-text)
+       (assoc-in [::db/exercise ::db/text ::db/actual]
+                 []))))
 
 
 (s/fdef 
@@ -69,6 +72,10 @@
                                             ::db/expected))) %
                     :else (conj % character)))))
 
+(rf/reg-event-db
+ ::character-typed
+ character-typed)
+
 
 (s/fdef 
  login-menu-button-pressed
@@ -84,6 +91,10 @@
   (-> db
       (assoc-in [::db/ui ::db/login-menu ::db/visible] true)))
 
+(rf/reg-event-db
+ ::login-menu-button-pressed
+ login-menu-button-pressed)
+
 
 (s/fdef 
  cancel-login-menu-button-pressed
@@ -98,6 +109,10 @@
 (defn cancel-login-menu-button-pressed [db [_ character]] 
   (-> db
       (assoc-in [::db/ui ::db/login-menu ::db/visible] false)))
+
+(rf/reg-event-db
+ ::cancel-login-menu-button-pressed
+ cancel-login-menu-button-pressed)
 
 
 (s/fdef 
@@ -119,6 +134,10 @@
   (-> db
       (assoc-in [::db/ui ::db/login-menu ::db/username] username)))
 
+(rf/reg-event-db
+ ::login-menu-username-changed
+ login-menu-username-changed)
+
 
 (s/fdef 
  login-menu-password-changed
@@ -139,6 +158,10 @@
   (-> db
       (assoc-in [::db/ui ::db/login-menu ::db/password] password)))
 
+(rf/reg-event-db
+ ::login-menu-password-changed
+ login-menu-password-changed)
+
 
 (s/fdef 
  navigated-to-exercise
@@ -153,6 +176,10 @@
 (defn navigated-to-exercise [db _]
   (-> db
       (assoc-in [::db/ui ::db/view] :exercise)))
+
+(rf/reg-event-db
+ ::navigated-to-exercise
+ navigated-to-exercise)
 
 
 (s/fdef 
@@ -169,33 +196,7 @@
   (-> db
       (assoc-in [::db/ui ::db/view] :home)))
 
- 
-(rf/reg-event-db :navigated-to-home navigated-to-home)
-
-
-(rf/reg-event-db :navigated-to-exercise navigated-to-exercise)
-
-
-(rf/reg-event-db :character-typed character-typed)
-
-
-(rf/reg-event-db :login-menu-button-pressed login-menu-button-pressed)
-
-
-(rf/reg-event-db :cancel-login-menu-button-pressed cancel-login-menu-button-pressed)
-
-
-(rf/reg-event-db :login-menu-username-changed login-menu-username-changed)
-
-
-(rf/reg-event-db :login-menu-password-changed login-menu-password-changed)
-
-
-
-
-
-
-
-
-
+(rf/reg-event-db
+ ::navigated-to-home
+ navigated-to-home)
 
