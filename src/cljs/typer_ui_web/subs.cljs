@@ -177,6 +177,12 @@
 
 
 (rf/reg-sub
+ ::user-login
+ (fn [db]
+   (-> db ::db/user ::db/login)))
+
+
+(rf/reg-sub
  ::exercise-text-actual
  (fn [db] 
    (-> db ::db/exercise ::db/text ::db/actual)))
@@ -198,6 +204,37 @@
  ::exercise-sheet-width
  (fn [db]
    (-> db ::db/ui ::db/exercise ::db/sheet ::db/width)))
+
+
+(rf/reg-sub
+ ::login-menu-visible
+ (fn [db]
+   (-> db ::db/ui ::db/login-menu ::db/visible)))
+
+
+(rf/reg-sub
+ ::login-menu-username
+ (fn [db]
+   (-> db ::db/ui ::db/login-menu ::db/username)))
+
+
+(rf/reg-sub
+ ::login-menu-password
+ (fn [db]
+   (-> db ::db/ui ::db/login-menu ::db/password)))
+
+
+(rf/reg-sub
+ ::view
+ (fn [db]
+   (-> db ::db/ui ::db/view)))
+
+
+(rf/reg-sub
+ ::modal-opened
+ :<- [::login-menu-visible]
+ (fn [login-menu-visible _]
+   login-menu-visible)) 
 
 
 (rf/reg-sub
@@ -228,6 +265,9 @@
        (format-text exercise-sheet-width)
        ::value
        index-formatted-text)))
+
+
+
 
 
 

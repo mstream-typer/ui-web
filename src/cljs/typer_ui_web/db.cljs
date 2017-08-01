@@ -29,7 +29,7 @@
 
 
 (s/def ::exercise-text
-  (s/and (s/coll-of ::exercise-character)
+  (s/and (s/coll-of ::exercise-character :gen-max 10)
          ::singly-whitespaced))
 
 
@@ -59,9 +59,17 @@
 (s/def ::db
   (s/keys :req [::exercise]))
 
+(s/def ::view #{:home :exercise})
 
 (def default-db
-  {::exercise {::text {::expected []
+  {::user {::username nil
+           ::password nil}
+   ::exercise {::text {::expected []
                        ::actual []}}
-   ::ui {::exercise {::sheet {::height 5
-                              ::width 20}}}})
+   ::ui {::view :home  
+         ::exercise {::sheet {::height 5
+                              ::width 20}}
+         ::login-menu {::visible false
+                       ::username ""
+                       ::password ""}
+         ::main-menu nil}})

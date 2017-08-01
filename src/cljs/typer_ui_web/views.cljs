@@ -6,64 +6,147 @@
             [clojure.string :as str]))
 
 
-(s/fdef 
+(s/def ::no-class-for-letters-beyond-expected
+  #(let [char-idx (-> % :args :character-index)
+         text-expected (-> % :args :text-expected)
+         result (% :ret)]
+     ((if (>= char-idx
+              (count text-expected))
+        identity
+        not) (empty? result)))) 
+
+
+(s/def ::whitespace-or-character-exclusively
+  #(let [char-idx (-> % :args :character-index) 
+         whitespace? (s/valid? ::db/whitespace (-> %
+                                                   :args
+                                                   :text-expected
+                                                   (get char-idx)))
+         result (% :ret)]
+     (and (re-find (if whitespace?
+                     #"\bwhitespace-\w+"
+                     #"\bcharacter-\w+")
+                   result)
+          (not (re-find (if whitespace?
+                          #"\bcharacter-\w+"
+                          #"\bwhitespace-\w+")
+                        result)))))
+
+
+(s/def ::typed-or-untyped-exclusively
+  #(let [char-idx (-> % :args :character-index) 
+         typed? (-> %
+                    :args
+                    :text-actual
+                    (get char-idx)
+                    some?) 
+         result (% :ret)]
+     (and (re-find (if typed?
+                     #"\w+-typed\b"
+                     #"\w+-untyped\b")
+                   result)
+          (not (re-find (if typed?
+                          #"\w+-untyped\b"
+                          #"\w+-typed\b")
+                        result))))) 
+
+
+(s/def ::right-positioned-cursor
+  #(let [char-idx (-> % :args :character-index) 
+         typed-chars-count (-> %
+                               :args
+                               :text-actual
+                               count)
+         result (% :ret)]
+     ((if (= char-idx
+             typed-chars-count)
+        identity
+        not) (re-find #"\bcursor\b"
+                      result))))
+
+
+(s/def ::marks-mistakes
+  #(let [char-idx (-> % :args :character-index)
+         actual-char (-> %
+                         :args
+                         :text-actual
+                         (get char-idx))
+         expected-char (-> %
+                           :args
+                           :text-expected
+                           (get char-idx))
+         result (% :ret)]
+     ((if (and (some? actual-char)
+               (not= actual-char
+                     expected-char))
+        identity 
+        not) (re-find #"\bincorrect\b"
+                      result))))
+
+
+(s/def ::marks-characters-after-first-mistake
+  #(let [char-idx (-> % :args :character-index)
+         actual-text-before-cursor (->> %
+                                        :args
+                                        :text-actual
+                                        (take char-idx))
+         expected-text-before-cursor (->> %
+                                          :args
+                                          :text-expected
+                                          (take char-idx))
+         result (% :ret)]
+     ((if (and (-> % :args :text-actual (get char-idx) some?)
+               (not= actual-text-before-cursor
+                     expected-text-before-cursor))
+        identity
+        not) (re-find #"\bafter-incorrect\b"
+                      result))))
+
+
+(s/fdef
  character-class
- :args (s/cat :text-expected ::db/exercise-text
-              :text-actual string?
-              :character-index (s/and int? pos?))
+ :args (s/and (s/cat :text-expected ::db/exercise-text
+                     :text-actual string?
+                     :character-index (s/and int? pos? #(<= % 10)))
+              #(< (% :character-index) (-> % :text-expected count)))
  :ret string?
- :fn #(let [text-expected (-> % :args :text-expected)
-            text-actual (-> % :args :text-actual)
-            char-index (-> % :args :character-index)
-            result (% :ret)
-            ch-actual (get text-actual char-index)
-            ch-expected (get text-expected char-index)]
-        (if (> (count text-actual) (count text-expected))
-          ""
-          (and (str/includes? result (if (s/valid? ::db/whitespace ch-expected)
-                                       "whitespace"
-                                       "character"))
-               (str/includes? result (if ch-actual
-                                       "typed"
-                                       "untyped"))
-               ((if (and ch-actual (not= ch-actual ch-expected))
-                  identity
-                  not) (str/includes? result "incorrect"))
-               ((if (and ch-actual
-                         (not= (take char-index text-actual)
-                               (take char-index text-expected)))
-                  identity
-                  not) (str/includes? result "after-incorrect"))
-               ((if (= char-index (count text-actual))
-                  identity 
-                  not) (str/includes? result "cursor"))))))
+ :fn (s/and ::no-class-for-letters-beyond-expected
+            ::whitespace-or-character-exclusively
+            ::typed-or-untyped-exclusively 
+            ::right-positioned-cursor
+            ::marks-mistakes
+            ::marks-characters-after-first-mistake))
 (def character-class
   (memoize
    (fn [text-expected text-actual character-index]
      (let [ch-actual (get text-actual character-index)
            ch-expected (get text-expected character-index)]
-       (if (> (count text-actual) (count text-expected))
-         ""
-         (str/join \space [(str (if (s/valid? ::db/whitespace ch-expected)
-                                  "whitespace"
-                                  "character")
-                                "-"
-                                (if ch-actual
-                                  "typed"
-                                  "untyped"))
-                           (when (and ch-actual
-                                      (not= ch-actual ch-expected)) "incorrect")
-                           (when (and ch-actual
-                                      (not= (take character-index text-actual)
-                                            (take character-index text-expected))) "after-incorrect")
-                           (when (= character-index
-                                    (count text-actual)) "cursor")]))))))
+       (if (>= character-index (count text-expected)) 
+         "" 
+         (str/join \space
+                   [(str (if (s/valid? ::db/whitespace ch-expected)
+                           "whitespace"
+                           "character")
+                         "-"
+                         (if ch-actual
+                           "typed"
+                           "untyped"))
+                    (when (and (some? ch-actual)
+                               (not= ch-actual ch-expected)) "incorrect")
+                    (when (and (some? ch-actual)
+                               (not= (take character-index text-actual)
+                                     (take character-index text-expected))) "after-incorrect")
+                    (when (= character-index
+                             (count text-actual)) "cursor")]))))))
 
-
+ 
 (defn main-menu []
-  [:div.ui.large.menu
-   [:div.right.menu
-    [:a.item "Sign In"]]])
+  [:div
+   [:div.ui.large.menu
+    [:div.right.menu
+     [:a.item
+      {:on-click #(rf/dispatch [:login-menu-button-pressed])}
+      "Sign In"]]]])
 
 
 (defn exercise-panel [{:keys [sheet-width sheet-height]}]
@@ -101,8 +184,91 @@
       [:div.bar {:style {:width progress}}]]]))
 
 
-(defn main-panel []
-  [:dev
+(defn login-menu []
+  (let [active @(rf/subscribe [::subs/login-menu-visible])
+        username @(rf/subscribe [::subs/login-menu-username])
+        password @(rf/subscribe [::subs/login-menu-password])]
+    [:div.ui.standard.modal.transition
+     {:class (if active
+               "visible active"
+               "hidden")}
+     [:div.header "Login"]
+     [:div.content
+      [:form.ui.form
+       [:div.field
+        [:label "Username"]
+        [:input#username
+         {:name "username"
+          :type "text"
+          :value username 
+          :on-change #(rf/dispatch [:login-menu-username-changed
+                                    (-> %
+                                        .-target
+                                        .-value)])}]]
+       [:div.field
+        [:label "Password"]
+        [:input#password
+         {:name "password"
+          :type "password"
+          :value password
+          :on-change #(rf/dispatch [:login-menu-password-changed
+                                    (-> %
+                                        .-target
+                                        .-value)])}]]
+     [:div.actions
+      [:div.ui.black.deny.button
+       {:on-click #(rf/dispatch [:cancel-login-menu-button-pressed])}
+       "Cancel"]
+      [:div.ui.positive.right.labeled.icon.button
+       {:on-click #(rf/dispatch [:cancel-login-menu-button-pressed])}
+       "Sign In"
+       [:i.sign.in.icon]]]]]])) 
+
+
+(defn dimmer []
+  (let [active @(rf/subscribe [::subs/modal-opened])]
+    [:div#dimmer.ui.dimmer.modals.page.transition
+     {:class (if active
+               "visible active"
+               "hidden")}
+     [login-menu]]))
+
+
+(defn home-view []
+  [:div
    [main-menu]
+   [:button.ui.button
+    {:on-click #(rf/dispatch [:navigated-to-exercise])}
+    "Start"]])
+
+
+(defn exercise-view []
+  [:div
+   [:button.ui.button
+    {:on-click #(rf/dispatch [:navigated-to-home])} 
+    "Back"]
    [exercise-panel]])
+
+
+(defn view []
+  (let [view @(rf/subscribe [::subs/view])]
+    (case view
+      :home [home-view]
+      :exercise [exercise-view])))
+
+
+(defn main-panel []
+  [:div#main-panel
+   [dimmer]
+   [view]])
+
+
+(defn key-press-listener [e]
+  (let [key->char {"Backspace" \backspace
+                   "Enter" \newline}]
+   (rf/dispatch [:character-typed (-> e (.-key) (#(get key->char % %)))])))
+
+
+(defonce register-keypress-listener 
+  (.addEventListener js/window "keydown" key-press-listener))
 

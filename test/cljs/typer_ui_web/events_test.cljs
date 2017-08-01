@@ -10,3 +10,31 @@
     (test/is (and (-> result ::tc/ret :result)
                   (not (result :failure)))
              result)))
+
+
+(test/deftest login-menu-button-pressed-test 
+  (let [result (first (stest/check `events/login-menu-button-pressed))]
+    (test/is (and (-> result ::tc/ret :result)
+                  (not (result :failure)))
+             result)))
+
+
+(test/deftest cancel-login-menu-button-pressed-test 
+  (let [result (first (stest/check `events/cancel-login-menu-button-pressed))]
+    (test/is (and (-> result ::tc/ret :result)
+                  (not (result :failure)))
+             result)))
+
+
+(test/deftest login-menu-username-changed-test
+  (let [result (first (stest/check `events/login-menu-username-changed))]
+    (test/is (and (-> result ::tc/ret :result)
+                  (not (result :failure)))
+             result)))
+
+
+(test/deftest login-menu-password-changed-test
+  (let [result (first (stest/check `events/login-menu-password-changed))]
+    (test/is (and (-> result ::tc/ret :result)
+                  (not (result :failure)))
+             result)))

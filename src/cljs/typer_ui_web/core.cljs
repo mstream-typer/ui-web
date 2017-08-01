@@ -8,21 +8,6 @@
             [typer-ui-web.config :as config]))
 
 
-(defn key-press-listener [e]
-  (let [char-codes {8 \backspace
-                    10 \newline
-                    13 \newline}]
-    (.preventDefault e) 
-    (rf/dispatch-sync [:character-typed (get char-codes
-                                             (.-keyCode e)
-                                             (-> e .-charCode char))])))
-
-
-(defn register-keypress-listener [] 
-  (.removeEventListener js/window "keypress" key-press-listener)
-  (.addEventListener js/window "keypress" key-press-listener))
-
-
 (defn dev-setup []
   (when config/debug?
     (enable-console-print!)
@@ -33,8 +18,7 @@
 (defn mount-root []
   (rf/clear-subscription-cache!)
   (reagent/render [views/main-panel]
-                  (.getElementById js/document "app"))
-  (register-keypress-listener))
+                  (.getElementById js/document "app")))
 
 
 (defn ^:export init []
@@ -42,6 +26,5 @@
   (rf/dispatch-sync [:exercise-loaded])
   (dev-setup)
   (mount-root))
-
 
 

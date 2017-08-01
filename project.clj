@@ -2,7 +2,7 @@
 
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha17"]
-   [org.clojure/clojurescript "1.9.671"]
+   [org.clojure/clojurescript "1.9.854"]
    [reagent "0.7.0"]
    [re-frame "0.9.4"]
    [re-frisk "0.4.5"]
@@ -58,8 +58,8 @@
              :source-paths ["src/cljs"]
              :compiler     {:main            typer-ui-web.core
                             :output-to       "resources/public/js/compiled/app.js"
-                            :optimizations   :advanced
-                            :closure-defines {goog.DEBUG false}
+                            :optimizations   :none
+                            :closure-defines {goog.DEBUG true}
                             :pretty-print    false}}
             
             {:id           "test"
