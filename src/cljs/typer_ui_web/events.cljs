@@ -5,13 +5,13 @@
 
 
 (def dummy-text
-  (concat "aaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa"
-          [\newline]
-          "bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb"
-          [\newline]
-          "cccccccccc ccccccccccc ccccccccccc ccccccccccc"
-          [\newline]
-          "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"))
+  (vec (concat "aaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa"
+               [\newline]
+               "bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb"
+               [\newline]
+               "cccccccccc ccccccccccc ccccccccccc ccccccccccc"
+               [\newline]
+               "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa")))
 
 
 (s/def ::parameterless-event
@@ -30,16 +30,6 @@
  ::db-initialized
  (fn [_ _]
    db/default-db))
-
-
-(rf/reg-event-db
- ::exercise-loaded
- (fn [db _]
-   (-> db
-       (assoc-in [::db/exercise ::db/text ::db/expected]
-                 dummy-text)
-       (assoc-in [::db/exercise ::db/text ::db/actual]
-                 []))))
 
 
 (s/fdef 
@@ -175,7 +165,11 @@
         (= out-view :exercise)))
 (defn navigated-to-exercise [db _]
   (-> db
-      (assoc-in [::db/ui ::db/view] :exercise)))
+      (assoc-in [::db/ui ::db/view] :exercise)
+      (assoc-in [::db/exercise ::db/text ::db/expected]
+                dummy-text)
+      (assoc-in [::db/exercise ::db/text ::db/actual]
+                [])))
 
 (rf/reg-event-db
  ::navigated-to-exercise

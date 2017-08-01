@@ -22,7 +22,6 @@
 
 (defn ^:export init []
   (rf/dispatch-sync [::events/db-initialized])
-  (rf/dispatch-sync [::events/exercise-loaded])
   (dev-setup)
   (mount-root))
 
