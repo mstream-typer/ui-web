@@ -4,13 +4,14 @@
             [typer-ui-web.subs :as subs]
             [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.test.check.generators :as gen]))
 
 
 (s/def ::no-class-for-letters-beyond-expected
   #(let [char-idx (-> % :args :character-index)
          text-expected (-> % :args :text-expected)
-         result (% :ret)]
+         result (% :ret)] 
      ((if (>= char-idx
               (count text-expected))
         identity
@@ -24,13 +25,13 @@
                                                    :text-expected
                                                    (get char-idx)))
          result (% :ret)]
-     (and (re-find (if whitespace?
-                     #"\bwhitespace-\w+"
-                     #"\bcharacter-\w+")
+     (and (re-find (if whitespace? 
+                     #"(?: |^)whitespace-\w+"
+                     #"(?: |^)character-\w+")
                    result)
           (not (re-find (if whitespace?
-                          #"\bcharacter-\w+"
-                          #"\bwhitespace-\w+")
+                          #"(?: |^)character-\w+"
+                          #"(?: |^)whitespace-\w+")
                         result)))))
 
 
@@ -43,12 +44,12 @@
                     some?) 
          result (% :ret)]
      (and (re-find (if typed?
-                     #"\w+-typed\b"
-                     #"\w+-untyped\b")
+                     #"\w+-typed(?: |$)"
+                     #"\w+-untyped(?: |$)")
                    result)
           (not (re-find (if typed?
-                          #"\w+-untyped\b"
-                          #"\w+-typed\b")
+                          #"\w+-untyped(?: |$)"
+                          #"\w+-typed(?: |$)")
                         result))))) 
 
 
@@ -62,7 +63,7 @@
      ((if (= char-idx
              typed-chars-count)
         identity
-        not) (re-find #"\bcursor\b"
+        not) (re-find #"(?: |^)cursor(?: |$)"
                       result))))
 
 
@@ -76,12 +77,22 @@
                            :args
                            :text-expected
                            (get char-idx))
+         actual-text-before-cursor (->> %
+                                        :args
+                                        :text-actual
+                                        (take char-idx))
+         expected-text-before-cursor (->> %
+                                          :args
+                                          :text-expected
+                                          (take char-idx))
          result (% :ret)]
      ((if (and (some? actual-char)
-               (not= actual-char
-                     expected-char))
+               (not= actual-char 
+                     expected-char)
+               (= actual-text-before-cursor
+                  expected-text-before-cursor))
         identity 
-        not) (re-find #"\bincorrect\b"
+        not) (re-find #"(?: |^)incorrect(?: |$)"
                       result))))
 
 
@@ -100,16 +111,33 @@
                (not= actual-text-before-cursor
                      expected-text-before-cursor))
         identity
-        not) (re-find #"\bafter-incorrect\b"
+        not) (re-find #"(?: |^)after-incorrect(?: |$)"
                       result))))
+
+
+(defn character-index-gen-fn []
+  (gen/resize 10 gen/pos-int))
+
+
+(defn actual-text-gen-fn []
+  (gen/vector gen/char-ascii 0 10))
+
+
+(s/def ::text-actual
+  (s/with-gen (s/coll-of char?) actual-text-gen-fn))
+
+
+(s/def ::character-index
+  (s/with-gen (s/and int? pos?) character-index-gen-fn))
 
 
 (s/fdef
  character-class
  :args (s/and (s/cat :text-expected ::db/exercise-text
-                     :text-actual string?
-                     :character-index (s/and int? pos? #(<= % 10)))
-              #(< (% :character-index) (-> % :text-expected count)))
+                     :text-actual ::text-actual
+                     :character-index ::character-index)
+              #(< (% :character-index) (-> % :text-expected count))
+              #(<= (% :text-actual count) (% :text-expected count)))
  :ret string?
  :fn (s/and ::no-class-for-letters-beyond-expected
             ::whitespace-or-character-exclusively
@@ -121,7 +149,9 @@
   (memoize
    (fn [text-expected text-actual character-index]
      (let [ch-actual (get text-actual character-index)
-           ch-expected (get text-expected character-index)]
+           ch-expected (get text-expected character-index)
+           text-before-cursor-matches? (= (take character-index text-actual)
+                                          (take character-index text-expected))]
        (if (>= character-index (count text-expected)) 
          "" 
          (str/join \space
@@ -133,10 +163,10 @@
                            "typed"
                            "untyped"))
                     (when (and (some? ch-actual)
-                               (not= ch-actual ch-expected)) "incorrect")
-                    (when (and (some? ch-actual)
-                               (not= (take character-index text-actual)
-                                     (take character-index text-expected))) "after-incorrect")
+                               (not= ch-actual ch-expected)
+                               text-before-cursor-matches?) "incorrect")
+                    (when (and (some? ch-actual) 
+                               (not text-before-cursor-matches?)) "after-incorrect")
                     (when (= character-index
                              (count text-actual)) "cursor")]))))))
 

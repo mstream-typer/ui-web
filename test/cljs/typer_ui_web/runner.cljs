@@ -9,8 +9,11 @@
 
 
 (test/deftest spec-tests
-  (let [result (stest/check)
-        failures (filter #(-> % ::tc/ret :result not) result)]
+  (let [result (stest/check [`typer-ui-web.subs
+                             `typer-ui-web.events
+                             `typer-ui-web.views]
+                            {:clojure.test.check/opts {:num-tests 2000}})
+        failures (filter (comp not :result ::tc/ret) result)]
     (test/is (empty? failures))))
 
 
