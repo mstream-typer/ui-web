@@ -5,20 +5,16 @@
             [re-frame.core :as rf]))
 
 
-(s/def ::sheet-size
-  (s/and int? #(< 0 %)))
-
-
 (s/def ::sheet-width
-  ::sheet-size)
+  ::db/sheet-size)
 
 
 (s/def ::sheet-height
-  ::sheet-size)
+  ::db/sheet-size)
 
 
 (s/def ::result
-  #{:success :failure})
+  #{::success ::failure})
 
 
 (s/def ::value
@@ -29,7 +25,7 @@
   #(let [in-text (-> % :args :text)
          result (-> % :ret ::result)
          out-text (-> % :ret ::value)]
-     (if (= result :failure)
+     (if (= result ::failure)
        (nil? out-text)
        (= (count in-text) (count (flatten out-text))))))
 
@@ -51,7 +47,7 @@
   #(let [in-text (-> % :args :text)
          out-text (-> % :ret ::value)
          result (-> % :ret ::result)]
-     (if (= result :failure)
+     (if (= result ::failure)
        (nil? out-text)
        (every? (partial s/valid? ::newline-last-if-present) out-text))))
 
@@ -91,12 +87,13 @@
 
 
 (s/def ::fails-on-too-long-input
-  #(let [in-text (-> % :args :text)
-         sheet-width (-> % :args :sheet-width)
-         result (-> % :ret ::result)]
-     (= result (if (words-fit-sheet-width? in-text sheet-width)
-                 :success
-                 :failure))))
+  #(let [in-text (-> % (:args) (:text))
+         sheet-width (-> % (:args) (:sheet-width))
+         result (-> % (:ret) (::result))]
+     (if (not (words-fit-sheet-width? in-text sheet-width))
+       (and (= result ::failure)
+            (-> % (:ret) (::error)))
+       true)))
 
 
 (s/fdef
@@ -147,12 +144,16 @@
               next-chars-count))))) 
 
 
+(s/def ::error
+  string?)
+
+
 (s/fdef
  format-text
  :args (s/cat :text ::db/exercise-text  
               :sheet-width ::sheet-width)
  :ret (s/keys :req [::result]
-              :opt [::value])
+              :opt [::value ::error])
  :fn (s/and ::keeps-same-length
             ::fails-on-too-long-input
             ::breaks-new-lines))
@@ -160,20 +161,20 @@
   (memoize
    (fn [text sheet-width]
      (if (not (words-fit-sheet-width? text sheet-width))
-       {::result :failure
-        ::vallue "words don't fit the sheet width"}
+       {::result ::failure
+        ::error "words don't fit the sheet width"}
        (loop [result []
               remaining text]
          (let [[next-row other-rows] (split-at (next-row-index (take sheet-width
                                                                      remaining))
                                                remaining)
-               next-result (conj result next-row)]
+               next-result (conj result (vec next-row))]
            (cond
-             (empty? next-row) {::result :success
-                                ::value (conj result other-rows)}
-             (empty? other-rows) {::result :success
-                                  ::value (conj result next-row)}
-             :else (recur next-result other-rows))))))))
+             (empty? next-row) {::result ::success
+                                ::value (conj result (vec other-rows))}
+             (empty? other-rows) {::result ::success
+                                  ::value next-result}
+             :else (recur next-result (vec other-rows)))))))))
 
 
 (rf/reg-sub

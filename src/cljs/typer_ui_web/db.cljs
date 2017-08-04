@@ -16,6 +16,10 @@
   #{\newline \space})
 
 
+(s/def ::sheet-size
+  (s/and int? #(< 0 %)))
+
+
 (s/def ::character
   characters)
 
@@ -29,8 +33,12 @@
 
 
 (s/def ::exercise-text
-  (s/and (s/coll-of ::exercise-character :gen-max 10)
+  (s/and (s/coll-of ::exercise-character :kind vector? :gen-max 10)
          ::singly-whitespaced))
+
+
+(s/def ::actual-text
+  (s/coll-of char? :kind vector? :gen-max 10))
 
 
 (s/def ::singly-whitespaced
@@ -41,7 +49,7 @@
 
 
 (s/def ::actual
-  (s/coll-of char?))
+  ::actual-text)
 
 
 (s/def ::expected
@@ -52,21 +60,40 @@
   (s/keys :req [::actual ::expected]))
 
 
+(s/def ::started boolean?)
+
+
+(s/def ::timer (s/and int? pos?))
+
+
 (s/def ::exercise
-  (s/keys :req [::text]))
+  (s/keys :req [::text ::started ::timer]))
+
+
+(s/def ::user
+  (s/keys :req [::password ::username]))
+
+
+(s/def ::ui
+  (s/keys :req [::exercise ::login-menu ::main-menu ::view]))
 
 
 (s/def ::db
-  (s/keys :req [::exercise]))
+  (s/keys :req [::exercise ::ui ::user]))
 
-(s/def ::view #{:home :exercise})
+
+(s/def ::view
+  #{::home ::exercise})
+
 
 (def default-db
   {::user {::username nil
            ::password nil}
-   ::exercise {::text {::expected []
+   ::exercise {::started false
+               ::timer 0
+               ::text {::expected []
                        ::actual []}}
-   ::ui {::view :home  
+   ::ui {::view ::home  
          ::exercise {::sheet {::height 5
                               ::width 20}}
          ::login-menu {::visible false

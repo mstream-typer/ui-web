@@ -26,10 +26,105 @@
   (s/tuple keyword? (s/and char?)))
 
 
+(s/fdef
+ db-initialized
+ :args (s/cat :db some?
+              :event ::parameterless-event)
+ :ret (s/and ::db/db
+             (partial = ::db/default-db)))
+(defn db-initialized [_ _]
+  db/default-db)
+
 (rf/reg-event-db
  ::db-initialized
- (fn [_ _]
-   db/default-db))
+ db-initialized)
+
+
+(s/def ::exercise-started
+  (comp ::db/started ::db/exercise :ret))
+
+
+(s/def ::backspace-removes-last-character
+  #(let [ch (-> %
+               (:args)
+               (:event)
+               (second))
+        in-text-actual (-> %
+                           (:args)
+                           (:db)
+                           (::db/exercise)
+                           (::db/text)
+                           (::db/actual))
+        out-text-actual (-> %
+                            (:ret)
+                            (::db/exercise)
+                            (::db/text)
+                            (::db/actual))]
+     (if (= \backspace ch)
+       (= out-text-actual
+          (if (empty? in-text-actual)
+            []
+            (pop in-text-actual)))
+       true)))
+
+
+(s/def ::does-not-exceed-expected-text-length
+  #(let [ch (-> %
+               (:args)
+               (:event)
+               (second))
+        in-text-actual (-> %
+                           (:args)
+                           (:db)
+                           (::db/exercise)
+                           (::db/text)
+                           (::db/actual))
+         in-text-expected (-> %
+                              (:args)
+                              (:db)
+                              (::db/exercise)
+                              (::db/text)
+                              (::db/expected))
+        out-text-actual (-> %
+                            (:ret)
+                            (::db/exercise)
+                            (::db/text)
+                            (::db/actual))]
+     (if (and (not= \backspace ch)
+              (= (count in-text-actual)
+                 (count in-text-expected)))
+       (= out-text-actual in-text-actual)
+       true)))
+
+
+(s/def ::appends-new-character-after-last-character
+  #(let [ch (-> %
+               (:args)
+               (:event)
+               (second))
+        in-text-actual (-> %
+                           (:args)
+                           (:db)
+                           (::db/exercise)
+                           (::db/text)
+                           (::db/actual))
+         in-text-expected (-> %
+                              (:args)
+                              (:db)
+                              (::db/exercise)
+                              (::db/text)
+                              (::db/expected))
+        out-text-actual (-> %
+                            (:ret)
+                            (::db/exercise)
+                            (::db/text)
+                            (::db/actual))]
+     (if (and (not= \backspace ch)
+              (< (count in-text-actual)
+                 (count in-text-expected)))
+       (= out-text-actual (conj in-text-actual ch))
+       true)))
+
 
 
 (s/fdef 
@@ -37,18 +132,9 @@
  :args (s/cat :db ::db/db  
               :event ::character-typed)
  :ret ::db/db
- :fn #(let [in-text-actual (-> % :args :db ::db/exercise ::db/text ::db/actual)
-            text-expected (-> % :args :db ::db/exercise ::db/text ::db/expected)
-            ch (-> % :args :event second)
-            out-text-actual (-> % :ret ::db/exercise ::db/text ::db/actual)]
-        (cond
-          (= \backspace ch) (= out-text-actual
-                               (if (empty? in-text-actual)
-                                 []
-                                 (pop in-text-actual)))
-          (= (count in-text-actual)
-             (count text-expected)) (= out-text-actual in-text-actual)
-          :else (= out-text-actual (conj in-text-actual ch)))))
+ :fn (s/and ::exercise-started
+            ::backspace-temoves-last-letter
+            ::does-not-exceed-expected-text-length))
 (defn character-typed [db [_ character]]
   (-> db
       (update-in [::db/exercise ::db/text ::db/actual]
