@@ -95,10 +95,12 @@
 
 
 (s/def ::data
-  (s/keys :req [::text
-                ::started
-                ::finished
-                ::timer]))
+  (s/and (s/keys :req [::text
+                       ::started
+                       ::finished
+                       ::timer])
+         #(not (and (not (::started %))
+                         (::finished %)))))
 
 
 (s/def ::sheet-size
