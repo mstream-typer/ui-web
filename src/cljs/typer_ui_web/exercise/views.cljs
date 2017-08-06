@@ -173,7 +173,127 @@
                     (when (= character-index
                              (count text-actual)) "cursor")]))))))
 
- 
+
+(s/def ::hourglass-empty-when-exercise-not-started
+  #(if (-> %
+           (:args)
+           (:exercise-started)
+           (not))
+     (= "hourglass empty icon"
+        (:ret %))
+     true))
+
+
+(s/def ::hourglass-empty-when-exercise-finished
+  #(if (-> %
+           (:args)
+           (:exercise-finished))
+     (= "hourglass empty icon"
+        (:ret %))
+     true))
+
+
+(s/def ::hourglass-start-when-in-first-third-of-time
+  #(if (and (-> %
+                (:args)
+                (:exercise-started))
+            (-> %
+                (:args)
+                (:exercise-finished)
+                (not))
+            (<= (-> %
+                    (:args)
+                    (:timer-initial)
+                    (* 0.7))
+                (-> %
+                    (:args)
+                    (:timer-current))
+                (-> %
+                    (:args)
+                    (:timer-initial))))
+     (= "hourglass start icon"
+        (:ret %))
+     true))
+
+
+(s/def ::hourglass-half-when-in-second-third-of-time
+    #(if (and (-> %
+                (:args)
+                (:exercise-started))
+              (-> %
+                  (:args)
+                  (:exercise-finished)
+                  (not))
+              (< (-> %
+                     (:args)
+                     (:timer-initial)
+                     (* 0.3))
+                 (-> %
+                     (:args)
+                     (:timer-current))
+                 (-> %
+                     (:args)
+                     (:timer-initial)
+                     (* 0.7))))
+       (= "hourglass half icon"
+          (:ret %))
+       true))
+
+
+(s/def ::hourglass-end-when-in-last-third-of-time
+  #(if (and (-> %
+                (:args)
+                (:exercise-started))
+            (-> %
+                (:args)
+                (:exercise-finished)
+                (not))
+            (<= 0
+                (-> %
+                    (:args)
+                    (:timer-current))
+                (-> %
+                    (:args)
+                    (:timer-initial)
+                    (* 0.3))))
+     (= "hourglass end icon"
+        (:ret %))
+     true))
+
+
+(s/fdef
+ hourglass-class
+ :args (s/and (s/cat :timer-current ::exercise-db/exercise-timer-current
+                     :timer-initial ::exercise-db/exercise-timer-initial
+                     :exercise-started boolean?
+                     :exercise-finished boolean?)
+              #(<= (:timer-current %)
+                   (:timer-initial %))
+              #(not (and (not (:exercise-started %))
+                         (:exercise-finished %))))
+ :ret string?
+ :fn (s/and ::hourglass-empty-when-exercise-not-started
+            ::hourglass-empty-when-exercise-finished
+            ::hourglass-start-when-in-first-third-of-time
+            ::hourglass-half-when-in-second-third-of-time
+            ::hourglass-end-when-in-last-third-of-time))
+(defn hourglass-class [current initial started finished]
+  (let [state-class (if (or (not started)
+                            finished)
+                      "empty"
+                      (cond
+                        (<= 0
+                            current
+                            (* 0.3 initial)) "end"
+                        (< (* 0.3 initial)
+                           current
+                           (* 0.7 initial)) "half"
+                        (<= (* 0.7 initial)
+                            current
+                            initial) "start"))]
+    (str "hourglass " state-class " icon")))
+
+
 (defn exercise-panel [{:keys [sheet-width sheet-height]}]
   (let [text-actual @(rf/subscribe [::exercise-subs/exercise-text-actual])
         text-expected @(rf/subscribe [::exercise-subs/exercise-text-expected])
@@ -185,26 +305,30 @@
                             \newline \u21b5}
         sheet-middle (quot (dec sheet-height) 2)]
     [:div#exercise.ui.raised.container.segment
+     [:div.ui.massive.blue.right.ribbon.label
+      [:i {:class (hourglass-class 1 2 true false)}]
+      "0:00"]
      [:div.ui.top.attached.progress.success
       [:div.bar {:style {:width progress}}]]
-     (for [idx (range sheet-height)]
-       (let [line-idx (- (+ current-line-idx idx) sheet-middle)]
-         (cond
-           (neg? line-idx)
-           ^{:key line-idx}
-           [:span.line]
-           (>= line-idx (count formatted-text))
-           ^{:key line-idx}
-           [:span.line]
-           :else
-           ^{:key line-idx}
-           [:span.line
-            (for [[ch-idx ch] (second (formatted-text line-idx))]
-              ^{:key ch-idx}
-              [:span {:class (character-class text-expected
-                                              text-actual
-                                              ch-idx)}
-               (whitespace-symbols ch ch)])])))
+     [:div.text
+      (for [idx (range sheet-height)]
+        (let [line-idx (- (+ current-line-idx idx) sheet-middle)]
+          (cond
+            (neg? line-idx)
+            ^{:key line-idx}
+            [:span.line]
+            (>= line-idx (count formatted-text))
+            ^{:key line-idx}
+            [:span.line]
+            :else
+            ^{:key line-idx}
+            [:span.line
+             (for [[ch-idx ch] (second (formatted-text line-idx))]
+               ^{:key ch-idx}
+               [:span {:class (character-class text-expected
+                                               text-actual
+                                               ch-idx)}
+                (whitespace-symbols ch ch)])])))]
      [:div.ui.bottom.attached.progress.success
       [:div.bar {:style {:width progress}}]]]))
 

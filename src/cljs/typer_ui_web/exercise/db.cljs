@@ -69,7 +69,22 @@
 (s/def ::started boolean?)
 
 
-(s/def ::timer (s/and int? (complement neg?)))
+(s/def ::exercise-timer-current (s/and int? (complement neg?)))
+
+
+(s/def ::exercise-timer-initial (s/and int? pos?))
+
+
+(s/def ::current
+  ::exercise-timer-current)
+
+
+(s/def ::initial
+  ::exercise-timer-initial)
+
+
+(s/def ::timer
+  (s/keys :req [::current ::initial]))
 
 
 (s/def ::data
@@ -102,7 +117,8 @@
 
 (def default-db
   {::exercise {::data {::started false
-                       ::timer 0
+                       ::timer {::current 100
+                                ::initial 100}
                        ::text {::expected dummy-text
                                ::actual []}}
                ::ui {::sheet {::height 5
