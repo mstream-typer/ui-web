@@ -1,5 +1,6 @@
 (ns typer-ui-web.views
-  (:require [typer-ui-web.db :as db]
+  (:require [typer-ui-web.common :refer [evt> <sub]]
+            [typer-ui-web.db :as db]
             [typer-ui-web.events :as events]
             [typer-ui-web.subs :as subs]
             [typer-ui-web.exercise.views :as exercise-views]
@@ -13,14 +14,14 @@
    [:div.ui.large.menu
     [:div.right.menu
      [:a.item
-      {:on-click #(rf/dispatch [::events/login-menu-button-pressed])}
+      {:on-click #(evt> [::events/login-menu-button-pressed])}
       "Sign In"]]]])
 
 
 (defn login-menu []
-  (let [active @(rf/subscribe [::subs/login-menu-visible])
-        username @(rf/subscribe [::subs/login-menu-username])
-        password @(rf/subscribe [::subs/login-menu-password])]
+  (let [active (<sub [::subs/login-menu-visible])
+        username (<sub [::subs/login-menu-username])
+        password (<sub [::subs/login-menu-password])]
     [:div.ui.standard.modal.transition
      {:class (if active
                "visible active"
@@ -34,32 +35,32 @@
          {:name "username"
           :type "text"
           :value username 
-          :on-change #(rf/dispatch [::events/login-menu-username-changed
-                                    (-> %
-                                        .-target
-                                        .-value)])}]]
+          :on-change #(evt> [::events/login-menu-username-changed
+                             (-> %
+                                 .-target
+                                 .-value)])}]]
        [:div.field
         [:label "Password"]
         [:input#password
          {:name "password"
           :type "password"
           :value password
-          :on-change #(rf/dispatch [::events/login-menu-password-changed 
-                                    (-> %
-                                        .-target
-                                        .-value)])}]]
-     [:div.actions
-      [:div.ui.black.deny.button
-       {:on-click #(rf/dispatch [::events/cancel-login-menu-button-pressed])}
-       "Cancel"]
-      [:div.ui.positive.right.labeled.icon.button
-       {:on-click #(rf/dispatch [::events/cancel-login-menu-button-pressed])}
-       "Sign In"
-       [:i.sign.in.icon]]]]]])) 
+          :on-change #(evt> [::events/login-menu-password-changed 
+                             (-> %
+                                 .-target
+                                 .-value)])}]]
+       [:div.actions
+        [:div.ui.black.deny.button
+         {:on-click #(evt> [::events/cancel-login-menu-button-pressed])}
+         "Cancel"]
+        [:div.ui.positive.right.labeled.icon.button
+         {:on-click #(evt> [::events/cancel-login-menu-button-pressed])}
+         "Sign In"
+         [:i.sign.in.icon]]]]]])) 
 
 
 (defn dimmer []
-  (let [active @(rf/subscribe [::subs/modal-opened])]
+  (let [active (<sub [::subs/modal-opened])]
     [:div#dimmer.ui.dimmer.modals.page.transition
      {:class (if active
                "visible active"
@@ -71,12 +72,12 @@
   [:div
    [main-menu]
    [:button.ui.button
-    {:on-click #(rf/dispatch [::events/navigated-to-exercise])}
+    {:on-click #(evt> [::events/navigated-to-exercise])}
     "Start"]])
 
 
 (defn view []
-  (let [view @(rf/subscribe [::subs/view])]
+  (let [view (<sub [::subs/view])]
     (case view
       ::db/home [home-view]
       ::db/exercise [exercise-views/exercise-view])))

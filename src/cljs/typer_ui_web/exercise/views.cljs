@@ -1,5 +1,6 @@
 (ns typer-ui-web.exercise.views
-  (:require [typer-ui-web.exercise.db :as exercise-db]
+  (:require [typer-ui-web.common :refer [evt> <sub]]
+            [typer-ui-web.exercise.db :as exercise-db]
             [typer-ui-web.events :as events]
             [typer-ui-web.exercise.events :as exercise-events]
             [typer-ui-web.exercise.subs :as exercise-subs]
@@ -295,17 +296,17 @@
 
 
 (defn exercise-panel [{:keys [sheet-width sheet-height]}]
-  (let [text-actual @(rf/subscribe [::exercise-subs/exercise-text-actual])
-        text-expected @(rf/subscribe [::exercise-subs/exercise-text-expected])
-        formatted-text @(rf/subscribe [::exercise-subs/exercise-text-formatted])
-        progress @(rf/subscribe [::exercise-subs/exercise-progress])
-        current-line-idx @(rf/subscribe [::exercise-subs/exercise-current-line])
-        sheet-height @(rf/subscribe [::exercise-subs/exercise-sheet-height])
-        exercise-started @(rf/subscribe [::exercise-subs/exercise-started])
-        exercise-finished @(rf/subscribe [::exercise-subs/exercise-finished])
-        timer-current @(rf/subscribe [::exercise-subs/exercise-timer-current])
-        timer-current-formatted @(rf/subscribe [::exercise-subs/exercise-timer-current-formatted])
-        timer-initial @(rf/subscribe [::exercise-subs/exercise-timer-initial])
+  (let [text-actual (<sub [::exercise-subs/exercise-text-actual])
+        text-expected (<sub [::exercise-subs/exercise-text-expected])
+        formatted-text (<sub [::exercise-subs/exercise-text-formatted])
+        progress (<sub [::exercise-subs/exercise-progress])
+        current-line-idx (<sub [::exercise-subs/exercise-current-line])
+        sheet-height (<sub [::exercise-subs/exercise-sheet-height])
+        exercise-started (<sub [::exercise-subs/exercise-started])
+        exercise-finished (<sub [::exercise-subs/exercise-finished])
+        timer-current (<sub [::exercise-subs/exercise-timer-current])
+        timer-current-formatted (<sub [::exercise-subs/exercise-timer-current-formatted])
+        timer-initial (<sub [::exercise-subs/exercise-timer-initial])
         whitespace-symbols {\space \u23b5 
                             \newline \u21b5}
         sheet-middle (quot (dec sheet-height) 2)]
@@ -344,7 +345,7 @@
 (defn exercise-view []
   [:div
    [:button.ui.button
-    {:on-click #(rf/dispatch [::events/navigated-to-home])}  
+    {:on-click #(evt> [::events/navigated-to-home])}
     "Back"]
    [exercise-panel]])
 
@@ -352,14 +353,14 @@
 (defn key-press-listener [e]
   (let [key->char {"Backspace" \backspace
                    "Enter" \newline}]
-    (rf/dispatch [::exercise-events/character-typed (->
-                                                     e
-                                                     (.-key)
-                                                     (#(get key->char % %)))])))
+    (evt> [::exercise-events/character-typed
+           (-> e
+               (.-key)
+               (#(get key->char % %)))])))
 
 
 (defn dispatch-timer-ticked-event []
-  (rf/dispatch [::exercise-events/timer-ticked]))
+  (evt> [::exercise-events/timer-ticked]))
 
 
 (defonce register-keypress-listener 
