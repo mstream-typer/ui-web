@@ -253,6 +253,59 @@
 
 
 (rf/reg-sub
+ ::exercise-started
+ (fn [db]
+   (-> db
+       (::exercise-db/exercise)
+       (::exercise-db/data)
+       (::exercise-db/started))))
+
+
+(rf/reg-sub
+ ::exercise-finished
+ (fn [db]
+   (-> db
+       (::exercise-db/exercise)
+       (::exercise-db/data)
+       (::exercise-db/finished))))
+
+
+(rf/reg-sub
+ ::exercise-timer-initial
+ (fn [db]
+   (-> db
+       (::exercise-db/exercise)
+       (::exercise-db/data)
+       (::exercise-db/timer)
+       (::exercise-db/initial))))
+
+
+(rf/reg-sub
+ ::exercise-timer-current
+ (fn [db]
+   (-> db
+       (::exercise-db/exercise)
+       (::exercise-db/data)
+       (::exercise-db/timer)
+       (::exercise-db/current))))
+
+
+(rf/reg-sub
+ ::exercise-timer-current-formatted
+ :<- [::exercise-timer-current]
+ (fn [current _] 
+   (let [minutes (quot current 60)
+         seconds (mod current 60)]
+     (str (if (< minutes 10)
+            (str "0" minutes)
+            minutes)
+          ":"
+          (if (< seconds 10)
+            (str "0" seconds)
+            seconds)))))
+
+
+(rf/reg-sub
  ::exercise-progress
  :<- [::exercise-text-actual]
  :<- [::exercise-text-expected]

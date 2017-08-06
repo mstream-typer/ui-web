@@ -123,7 +123,7 @@
 
 (s/fdef 
  character-typed
- :args (s/cat :db ::db/db  
+ :args (s/cat :db ::db/db 
               :event ::character-typed-event) 
  :ret ::db/db
  :fn (s/and ::starts-exercise
@@ -155,4 +155,131 @@
 (rf/reg-event-db
  ::character-typed
  character-typed)
+
+
+(s/def ::exercise-timer-counts-down
+  #(let [in-started (-> %
+                        (:args)
+                        (:db)
+                        (::exercise-db/exercise)
+                        (::exercise-db/data)
+                        (::exercise-db/started))
+         in-finished (-> %
+                         (:args)
+                         (:db)
+                         (::exercise-db/exercise)
+                         (::exercise-db/data)
+                         (::exercise-db/finished))
+         in-timer (-> %
+                      (:args)
+                      (:db)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/timer)
+                      (::exercise-db/current))
+         out-timer (-> %
+                      (:ret)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/timer)
+                      (::exercise-db/current))]
+     (if (and in-started
+              (not in-finished)
+              (pos? in-timer))
+         (= out-timer (dec in-timer))
+         true)))
+
+
+(s/def ::exercise-timer-does-not-go-below-zero
+    #(let [out-timer (-> %
+                         (:ret)
+                         (::exercise-db/exercise)
+                         (::exercise-db/data)
+                         (::exercise-db/timer)
+                         (::exercise-db/current))]
+       (not (neg? out-timer))))
+
+
+(s/def ::tick-ignored-if-exercise-not-started
+    #(let [in-started (-> %
+                      (:args)
+                      (:db)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/started))
+         in-timer (-> %
+                      (:args)
+                      (:db)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/timer)
+                      (::exercise-db/current))
+         out-timer (-> %
+                      (:ret)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/timer)
+                      (::exercise-db/current))]
+       (if (not in-started)
+         (= out-timer in-timer)
+         true)))
+
+
+(s/def ::tick-ignored-if-exercise-finished
+  #(let [in-finished (-> %
+                      (:args)
+                      (:db)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/finished))
+         in-timer (-> %
+                      (:args)
+                      (:db)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/timer)
+                      (::exercise-db/current))
+         out-timer (-> %
+                      (:ret)
+                      (::exercise-db/exercise)
+                      (::exercise-db/data)
+                      (::exercise-db/timer)
+                      (::exercise-db/current))]
+     (if in-finished
+       (= out-timer in-timer)
+       true)))
+
+
+(s/fdef 
+ timer-ticked
+ :args (s/cat :db ::db/db  
+              :event ::parameterless-event) 
+ :ret ::db/db
+ :fn (s/and ::exercise-timer-counts-down
+            ::exercise-timer-does-not-go-below-zero
+            ::tick-ignored-if-exercise-not-started
+            ::tick-ignored-if-exercise-finished))
+(defn timer-ticked [db [_ _]]
+  (let [exercise-started (-> db
+                             (::exercise-db/exercise)
+                             (::exercise-db/data)
+                             (::exercise-db/started))
+        exercise-finished (-> db
+                             (::exercise-db/exercise)
+                             (::exercise-db/data)
+                             (::exercise-db/finished))]
+    (-> db
+        (update-in [::exercise-db/exercise
+                    ::exercise-db/data
+                    ::exercise-db/timer
+                    ::exercise-db/current]
+                   #(if (or (zero? %)
+                            (not exercise-started)
+                            exercise-finished)
+                      %
+                      (dec %))))))
+
+(rf/reg-event-db
+ ::timer-ticked
+ timer-ticked)
 

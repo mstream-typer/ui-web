@@ -301,13 +301,21 @@
         progress @(rf/subscribe [::exercise-subs/exercise-progress])
         current-line-idx @(rf/subscribe [::exercise-subs/exercise-current-line])
         sheet-height @(rf/subscribe [::exercise-subs/exercise-sheet-height])
+        exercise-started @(rf/subscribe [::exercise-subs/exercise-started])
+        exercise-finished @(rf/subscribe [::exercise-subs/exercise-finished])
+        timer-current @(rf/subscribe [::exercise-subs/exercise-timer-current])
+        timer-current-formatted @(rf/subscribe [::exercise-subs/exercise-timer-current-formatted])
+        timer-initial @(rf/subscribe [::exercise-subs/exercise-timer-initial])
         whitespace-symbols {\space \u23b5 
                             \newline \u21b5}
         sheet-middle (quot (dec sheet-height) 2)]
     [:div#exercise.ui.raised.container.segment
      [:div.ui.massive.blue.right.ribbon.label
-      [:i {:class (hourglass-class 1 2 true false)}]
-      "0:00"]
+      [:i {:class (hourglass-class timer-current
+                                   timer-initial
+                                   exercise-started
+                                   exercise-finished)}] 
+      timer-current-formatted]
      [:div.ui.top.attached.progress.success
       [:div.bar {:style {:width progress}}]]
      [:div.text
@@ -350,7 +358,15 @@
                                                      (#(get key->char % %)))])))
 
 
+(defn dispatch-timer-ticked-event []
+  (rf/dispatch [::exercise-events/timer-ticked]))
+
+
 (defonce register-keypress-listener 
   (.addEventListener js/window "keydown" key-press-listener))
+
+
+(defonce register-timer
+  (js/setInterval dispatch-timer-ticked-event 1000))
 
  

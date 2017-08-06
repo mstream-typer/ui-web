@@ -69,10 +69,15 @@
 (s/def ::started boolean?)
 
 
-(s/def ::exercise-timer-current (s/and int? (complement neg?)))
+(s/def ::finished boolean?)
 
 
-(s/def ::exercise-timer-initial (s/and int? pos?))
+(s/def ::exercise-timer-current
+  (s/and int? (complement neg?)))
+
+
+(s/def ::exercise-timer-initial
+  (s/and int? pos?))
 
 
 (s/def ::current
@@ -84,11 +89,16 @@
 
 
 (s/def ::timer
-  (s/keys :req [::current ::initial]))
+  (s/and (s/keys :req [::current ::initial])
+         #(<= (:current %)
+              (:initial %))))
 
 
 (s/def ::data
-  (s/keys :req [::text ::started ::timer]))
+  (s/keys :req [::text
+                ::started
+                ::finished
+                ::timer]))
 
 
 (s/def ::sheet-size
@@ -117,6 +127,7 @@
 
 (def default-db
   {::exercise {::data {::started false
+                       ::finished false
                        ::timer {::current 100
                                 ::initial 100}
                        ::text {::expected dummy-text
