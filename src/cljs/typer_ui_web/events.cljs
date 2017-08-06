@@ -1,17 +1,8 @@
 (ns typer-ui-web.events
   (:require [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
-            [typer-ui-web.db :as db]))
-
-
-(def dummy-text
-  (vec (concat "aaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa"
-               [\newline]
-               "bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb"
-               [\newline]
-               "cccccccccc ccccccccccc ccccccccccc ccccccccccc"
-               [\newline]
-               "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa")))
+            [typer-ui-web.db :as db]
+            [typer-ui-web.exercise.db :as exercise-db]))
 
 
 (s/def ::parameterless-event
@@ -19,138 +10,21 @@
 
 
 (s/def ::input-change-event
-  (s/tuple keyword?))
-
-
-(s/def ::character-typed
-  (s/tuple keyword? (s/and char?)))
+  (s/tuple keyword? string?))
 
 
 (s/fdef
  db-initialized
- :args (s/cat :db some?
+ :args (s/cat :db ::db/db 
               :event ::parameterless-event)
  :ret (s/and ::db/db
-             (partial = ::db/default-db)))
+             (partial = db/default-db)))
 (defn db-initialized [_ _]
   db/default-db)
 
 (rf/reg-event-db
  ::db-initialized
  db-initialized)
-
-
-(s/def ::exercise-started
-  (comp ::db/started ::db/exercise :ret))
-
-
-(s/def ::backspace-removes-last-character
-  #(let [ch (-> %
-               (:args)
-               (:event)
-               (second))
-        in-text-actual (-> %
-                           (:args)
-                           (:db)
-                           (::db/exercise)
-                           (::db/text)
-                           (::db/actual))
-        out-text-actual (-> %
-                            (:ret)
-                            (::db/exercise)
-                            (::db/text)
-                            (::db/actual))]
-     (if (= \backspace ch)
-       (= out-text-actual
-          (if (empty? in-text-actual)
-            []
-            (pop in-text-actual)))
-       true)))
-
-
-(s/def ::does-not-exceed-expected-text-length
-  #(let [ch (-> %
-               (:args)
-               (:event)
-               (second))
-        in-text-actual (-> %
-                           (:args)
-                           (:db)
-                           (::db/exercise)
-                           (::db/text)
-                           (::db/actual))
-         in-text-expected (-> %
-                              (:args)
-                              (:db)
-                              (::db/exercise)
-                              (::db/text)
-                              (::db/expected))
-        out-text-actual (-> %
-                            (:ret)
-                            (::db/exercise)
-                            (::db/text)
-                            (::db/actual))]
-     (if (and (not= \backspace ch)
-              (= (count in-text-actual)
-                 (count in-text-expected)))
-       (= out-text-actual in-text-actual)
-       true)))
-
-
-(s/def ::appends-new-character-after-last-character
-  #(let [ch (-> %
-               (:args)
-               (:event)
-               (second))
-        in-text-actual (-> %
-                           (:args)
-                           (:db)
-                           (::db/exercise)
-                           (::db/text)
-                           (::db/actual))
-         in-text-expected (-> %
-                              (:args)
-                              (:db)
-                              (::db/exercise)
-                              (::db/text)
-                              (::db/expected))
-        out-text-actual (-> %
-                            (:ret)
-                            (::db/exercise)
-                            (::db/text)
-                            (::db/actual))]
-     (if (and (not= \backspace ch)
-              (< (count in-text-actual)
-                 (count in-text-expected)))
-       (= out-text-actual (conj in-text-actual ch))
-       true)))
-
-
-
-(s/fdef 
- character-typed
- :args (s/cat :db ::db/db  
-              :event ::character-typed)
- :ret ::db/db
- :fn (s/and ::exercise-started
-            ::backspace-temoves-last-letter
-            ::does-not-exceed-expected-text-length))
-(defn character-typed [db [_ character]]
-  (-> db
-      (update-in [::db/exercise ::db/text ::db/actual]
-                 #(cond 
-                    (= \backspace character) (if (empty? %)
-                                               %
-                                               (pop %))
-                    (= (count %) (count (-> db
-                                            ::db/exercise
-                                            ::db/text
-                                            ::db/expected))) %
-                    :else (conj % character)))))
-
-(rf/reg-event-db
- ::character-typed
- character-typed)
 
 
 (s/fdef 
@@ -240,29 +114,6 @@
 
 
 (s/fdef 
- navigated-to-exercise
- :args (s/cat :db ::db/db  
-              :event ::parameterless-event)
- :ret ::db/db
- :fn #(let [out-view (-> %
-                         :ret
-                         ::db/ui
-                         ::db/view)]
-        (= out-view :exercise)))
-(defn navigated-to-exercise [db _]
-  (-> db
-      (assoc-in [::db/ui ::db/view] :exercise)
-      (assoc-in [::db/exercise ::db/text ::db/expected]
-                dummy-text)
-      (assoc-in [::db/exercise ::db/text ::db/actual]
-                [])))
-
-(rf/reg-event-db
- ::navigated-to-exercise
- navigated-to-exercise)
-
-
-(s/fdef 
  navigated-to-home
  :args (s/cat :db ::db/db  
               :event ::parameterless-event)
@@ -271,12 +122,50 @@
                          :ret
                          ::db/ui
                          ::db/view)]
-        (= out-view :home)))
+        (= out-view ::db/home)))
 (defn navigated-to-home [db _]
   (-> db
-      (assoc-in [::db/ui ::db/view] :home)))
+      (assoc-in [::db/ui
+                 ::db/view]
+                ::db/home)))
 
 (rf/reg-event-db
  ::navigated-to-home
  navigated-to-home)
+
+
+(s/def ::view-changes-to-exercise 
+  #(= ::db/exercise
+      (-> %
+          (:ret)
+          (::db/ui)
+          (::db/view))))
+
+
+(s/def ::exercise-state-resets 
+  #(= (::exercise-db/exercise exercise-db/default-db)
+      (-> %
+          (:ret)
+          (::exercise-db/exercise))))
+
+
+(s/fdef 
+ navigated-to-exercise
+ :args (s/cat :db ::db/db  
+              :event ::parameterless-event)
+ :ret ::db/db
+ :fn (s/and ::view-changes-to-exercise
+            ::exercise-state-resets))
+(defn navigated-to-exercise [db _]
+  (-> db
+      (assoc-in [::db/ui
+                 ::db/view]
+                ::db/exercise)
+      (merge exercise-db/default-db)))
+
+(rf/reg-event-db
+ ::navigated-to-exercise
+ navigated-to-exercise)
+
+
 
