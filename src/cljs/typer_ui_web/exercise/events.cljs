@@ -31,6 +31,31 @@
        (::exercise-db/started)))
 
 
+(s/def ::summary-modal-hides
+  #(not (-> %
+            (:ret)
+            (::exercise-db/exercise)
+            (::exercise-db/ui)
+            (::exercise-db/summary-modal)
+            (::exercise-db/visible))))
+
+
+(s/def ::summary-modal-hides
+  #(not (-> %
+            (:ret)
+            (::exercise-db/exercise)
+            (::exercise-db/ui)
+            (::exercise-db/summary-modal)
+            (::exercise-db/visible))))
+
+
+(s/def ::exercise-state-resets 
+  #(= (::exercise-db/exercise exercise-db/default-db)
+      (-> %
+          (:ret)
+          (::exercise-db/exercise))))
+
+
 (s/def ::finishes-exercise-when-whole-text-matches
   #(let [ch (-> %
                 (:args)
@@ -53,10 +78,17 @@
          out-exercise-finished (-> %
                                    (:ret)
                                    (::exercise-db/exercise)
-                                   (::exercise-db/finished))]
+                                   (::exercise-db/finished))
+         out-summary-modal-visible (-> %
+                                       (:ret)
+                                       (::exercise-db/exercise)
+                                       (::exercise-db/ui)
+                                       (::exercise-db/summary-modal)
+                                       (::exercise-db/visible))]
      (if (= in-text-expected
             (conj in-text-actual ch))
-       out-exercise-finished
+       (and out-exercise-finished
+            out-summary-modal-visible)
        true)))
 
 
@@ -182,42 +214,6 @@
        true)))
 
 
-(s/def ::finishes-exercise-when-whole-text-matches
-  #(let [ch (-> %
-                (:args)
-                (:event)
-                (second))
-         in-text-actual (-> %
-                            (:args)
-                            (:db)
-                            (::exercise-db/exercise)
-                            (::exercise-db/data)
-                            (::exercise-db/text)
-                            (::exercise-db/actual))
-         in-text-expected (-> %
-                              (:args)
-                              (:db)
-                              (::exercise-db/exercise)
-                              (::exercise-db/data)
-                              (::exercise-db/text)
-                              (::exercise-db/expected))
-         in-finished (-> %
-                         (:args)
-                         (:db)
-                         (::exercise-db/exercise)
-                         (::exercise-db/data)
-                         (::exercise-db/finished))
-         out-exercise-finished (-> %
-                                   (:ret)
-                                   (::exercise-db/exercise)
-                                   (::exercise-db/finished))]
-     (if (and (not in-finished)
-              (= in-text-expected
-                 (conj in-text-actual ch)))
-       out-exercise-finished
-       true)))
-
-
 (s/fdef 
  character-typed
  :args (s/cat :db ::db/db 
@@ -266,6 +262,11 @@
           (assoc-in [::exercise-db/exercise
                      ::exercise-db/data 
                      ::exercise-db/finished]
+                    (= next-text-actual text-expected))
+          (assoc-in [::exercise-db/exercise
+                     ::exercise-db/ui
+                     ::exercise-db/summary-modal
+                     ::exercise-db/visible]
                     (= next-text-actual text-expected))))))
 
 (rf/reg-event-db
@@ -324,30 +325,44 @@
                       (::exercise-db/data)
                       (::exercise-db/timer)
                       (::exercise-db/current))
-         in-started (-> %
-                        (:args)
-                        (:db)
-                        (::exercise-db/exercise)
-                        (::exercise-db/data)
-                        (::exercise-db/started))
+         in-started? (-> %
+                         (:args)
+                         (:db)
+                         (::exercise-db/exercise)
+                         (::exercise-db/data)
+                         (::exercise-db/started))
+         in-finished? (-> %
+                          (:args)
+                          (:db)
+                          (::exercise-db/exercise)
+                          (::exercise-db/data)
+                          (::exercise-db/finished))
          out-finished (-> %
                           (:ret)
                           (::exercise-db/exercise)
                           (::exercise-db/data)
-                          (::exercise-db/finished))]
-     (if (and in-started
+                          (::exercise-db/finished))
+         out-summary-modal-visible (-> %
+                                       (:ret)
+                                       (::exercise-db/exercise)
+                                       (::exercise-db/ui)
+                                       (::exercise-db/summary-modal)
+                                       (::exercise-db/visible))]
+     (if (and in-started?
+              (not in-finished?)
               (zero? in-timer))  
-       out-finished
+       (and out-finished
+            out-summary-modal-visible)
        true)))
 
 
 (s/def ::tick-ignored-if-exercise-not-started
-  #(let [in-started (-> %
-                        (:args)
-                        (:db)
-                        (::exercise-db/exercise)
-                        (::exercise-db/data)
-                        (::exercise-db/started))
+  #(let [in-started? (-> %
+                         (:args)
+                         (:db)
+                         (::exercise-db/exercise)
+                         (::exercise-db/data)
+                         (::exercise-db/started))
          in-timer (-> %
                       (:args)
                       (:db)
@@ -356,14 +371,14 @@
                       (::exercise-db/timer)
                       (::exercise-db/current))
          out-timer (-> %
-                      (:ret)
-                      (::exercise-db/exercise)
-                      (::exercise-db/data)
-                      (::exercise-db/timer)
-                      (::exercise-db/current))]
-       (if (not in-started)
-         (= out-timer in-timer)
-         true)))
+                       (:ret)
+                       (::exercise-db/exercise)
+                       (::exercise-db/data)
+                       (::exercise-db/timer)
+                       (::exercise-db/current))]
+     (if (not in-started?)
+       (= out-timer in-timer)
+       true)))
 
 
 (s/def ::tick-ignored-if-exercise-finished
@@ -429,6 +444,11 @@
           (assoc-in [::exercise-db/exercise
                      ::exercise-db/data
                      ::exercise-db/finished]
+                    (zero? timer))
+          (assoc-in [::exercise-db/exercise
+                     ::exercise-db/ui
+                     ::exercise-db/summary-modal
+                     ::exercise-db/visible]
                     (zero? timer))))))
 
 (rf/reg-event-db
@@ -441,16 +461,19 @@
  :args (s/cat :db ::db/db  
               :event ::parameterless-event) 
  :ret ::db/db
- :fn #(= (::exercise-db/exercise exercise-db/default-db)
-         (-> %
-             :ret
-             ::exercise-db/exercise)))
+ :fn (s/and ::exercise-state-resets
+            ::summary-modal-hides))
 (defn exercise-restarted [db [_ _]]
-  (merge db exercise-db/default-db))
+  (-> db
+      (merge exercise-db/default-db)
+      (assoc-in [::exercise-db/exercise
+                 ::exercise-db/ui
+                 ::exercise-db/summary-modal
+                 ::exercise-db/visible]
+                false)))
 
 (rf/reg-event-db
  ::exercise-restarted
  exercise-restarted)
 
 
-       

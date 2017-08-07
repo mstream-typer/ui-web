@@ -49,14 +49,15 @@
 
 
 (rf/reg-sub
- ::modal-opened
+ ::modal-open
  :<- [::login-menu-visible]
  (fn [login-menu-visible _]
-   login-menu-visible)) 
+   login-menu-visible))
 
 
 
 
+ 
 
 
 

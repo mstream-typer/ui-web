@@ -19,11 +19,11 @@
 
 
 (defn login-menu []
-  (let [active (<sub [::subs/login-menu-visible])
+  (let [visible (<sub [::subs/login-menu-visible])
         username (<sub [::subs/login-menu-username])
         password (<sub [::subs/login-menu-password])]
     [:div.ui.standard.modal.transition
-     {:class (if active
+     {:class (if visible
                "visible active"
                "hidden")}
      [:div.header "Login"]
@@ -60,9 +60,9 @@
 
 
 (defn dimmer []
-  (let [active (<sub [::subs/modal-opened])]
+  (let [visible (<sub [::subs/modal-open])]
     [:div#dimmer.ui.dimmer.modals.page.transition
-     {:class (if active
+     {:class (if visible
                "visible active"
                "hidden")}
      [login-menu]]))

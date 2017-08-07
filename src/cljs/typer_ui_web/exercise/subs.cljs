@@ -291,6 +291,16 @@
 
 
 (rf/reg-sub
+ ::summary-modal-open
+ (fn [db]
+   (-> db
+       (::exercise-db/exercise)
+       (::exercise-db/ui)
+       (::exercise-db/summary-modal)
+       (::exercise-db/visible))))
+
+
+(rf/reg-sub
  ::exercise-timer-current-formatted
  :<- [::exercise-timer-current]
  (fn [current _] 
@@ -333,3 +343,10 @@
        (format-text exercise-sheet-width)
        ::value
        index-formatted-text)))
+
+ 
+(rf/reg-sub
+ ::modal-open
+ :<- [::summary-modal-open]
+ (fn [summary-modal-open _]
+   summary-modal-open))

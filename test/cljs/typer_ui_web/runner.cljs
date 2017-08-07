@@ -40,7 +40,7 @@
                               `typer-ui-web.exercise.subs
                               `typer-ui-web.exercise.events
                               `typer-ui-web.exercise.views]
-                             {:clojure.test.check/opts {:num-tests 100}})
+                             {:clojure.test.check/opts {:num-tests 50}})
         failures (results->failures results)
         failures-cnt (count failures)]
 ;    (pp/pprint results) 

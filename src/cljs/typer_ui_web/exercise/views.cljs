@@ -354,10 +354,43 @@
      "Restart"]]])
 
 
+(defn exercise-summary-modal []
+  (let [visible (<sub [::exercise-subs/summary-modal-open])]
+    [:div.ui.standard.modal.transition
+     {:class (if true
+               "visible active"
+               "hidden")}
+     [:div.header "Exercise finished"]
+     [:div.content "Congratulations!!!"]
+     [:div.actions
+      [:div.ui.right.labeled.icon.button
+       {:on-click #(evt> [::events/navigated-to-home])}
+       "Main menu"
+       [:i.home.icon]]
+      [:div.ui.right.labeled.icon.button
+       {:on-click #(evt> [::exercise-events/exercise-restarted])} 
+       "Repeat"
+       [:i.repeat.icon]]
+      [:div.ui.positive.right.labeled.icon.button
+       {:on-click #(evt> [::exercise-events/exercise-restarted])} 
+       "Next exercise"
+       [:i.arrow.circle.right.icon]]]]))
+
+
+(defn dimmer []
+  (let [active (<sub [::exercise-subs/modal-open])]
+    [:div#dimmer.ui.dimmer.modals.page.transition
+     {:class (if active
+               "visible active"
+               "hidden")}
+     [exercise-summary-modal]]))
+
+
 (defn exercise-view []
   [:div
    [exercise-menu]
-   [exercise-panel]])
+   [exercise-panel]
+   [dimmer]])
 
 
 (defn key-press-listener [e]

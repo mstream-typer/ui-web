@@ -116,7 +116,15 @@
 
 
 (s/def ::sheet
-  (s/keys :req[::height ::width]))
+  (s/keys :req [::height ::width]))
+
+
+(s/def ::visible
+  boolean?)
+
+
+(s/def ::summary-modal
+  (s/keys :req [::visible]))
   
 
 (s/def ::ui
@@ -135,4 +143,5 @@
                        ::text {::expected dummy-text
                                ::actual []}}
                ::ui {::sheet {::height 5
-                              ::width 20}}}})
+                              ::width 20}
+                     ::summary-modal {::visible false}}}})
