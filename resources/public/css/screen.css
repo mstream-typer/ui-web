@@ -1,43 +1,51 @@
-span.line {
-  display: block;
-  min-height: 1.25em;
+.modal {
+  max-height: calc(100% - 100px);
+  transform: translate(0, -50%);
 }
 
 #exercise {
-  font-size: 4em;
   letter-spacing: 0.05em;
   line-height: 1.25em;
   padding-bottom: 0.25em;
   padding-top: 0.25em;
 }
 
-#exercise .incorrect {
+#exercise span.line {
+  display: block;
+  min-height: 1.25em;
+}
+
+#exercise .text {
+  font-size: 4em;
+}
+
+#exercise .text .incorrect {
   background: #FF0000;
   color: #880000 !important;
 }
 
-#exercise .after-incorrect {
+#exercise .text .after-incorrect {
   background: #FF8888;
 }
 
-#exercise .cursor {
+#exercise .text .cursor {
   border-bottom-width: 3px;
   border-bottom-style: solid;
   border-bottom-color: #00FF00;
 }
 
-#exercise .character-untyped {
+#exercise .text .character-untyped {
   color: #888888;
 }
 
-#exercise .character-typed {
+#exercise .text .character-typed {
   color: #000000;
 }
 
-#exercise .whitespace-untyped {
+#exercise .text .whitespace-untyped {
   color: #888888;
 }
 
-#exercise .whitespace-typed {
+#exercise .text .whitespace-typed {
   color: #FFFFFF;
 }
