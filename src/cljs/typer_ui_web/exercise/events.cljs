@@ -367,12 +367,12 @@
 
 
 (s/def ::tick-ignored-if-exercise-finished
-  #(let [in-finished (-> %
-                      (:args)
-                      (:db)
-                      (::exercise-db/exercise)
-                      (::exercise-db/data)
-                      (::exercise-db/finished))
+  #(let [in-finished? (-> %
+                          (:args)
+                          (:db)
+                          (::exercise-db/exercise)
+                          (::exercise-db/data)
+                          (::exercise-db/finished))
          in-timer (-> %
                       (:args)
                       (:db)
@@ -386,7 +386,7 @@
                       (::exercise-db/data)
                       (::exercise-db/timer)
                       (::exercise-db/current))]
-     (if in-finished
+     (if in-finished?
        (= out-timer in-timer)
        true)))
 
@@ -402,11 +402,11 @@
             ::tick-ignored-if-exercise-not-started
             ::tick-ignored-if-exercise-finished))
 (defn timer-ticked [db [_ _]]
-  (let [exercise-started (-> db
+  (let [exercise-started? (-> db
                              (::exercise-db/exercise)
                              (::exercise-db/data)
                              (::exercise-db/started))
-        exercise-finished (-> db
+        exercise-finished? (-> db
                              (::exercise-db/exercise)
                              (::exercise-db/data)
                              (::exercise-db/finished))
@@ -415,8 +415,8 @@
                   (::exercise-db/data)
                   (::exercise-db/timer)
                   (::exercise-db/current))]
-    (if (or (not exercise-started)
-            exercise-finished)
+    (if (or (not exercise-started?)
+            exercise-finished?)
       db
       (-> db
           (assoc-in [::exercise-db/exercise
@@ -434,5 +434,23 @@
 (rf/reg-event-db
  ::timer-ticked
  timer-ticked)
+
+
+(s/fdef 
+ exercise-restarted
+ :args (s/cat :db ::db/db  
+              :event ::parameterless-event) 
+ :ret ::db/db
+ :fn #(= (::exercise-db/exercise exercise-db/default-db)
+         (-> %
+             :ret
+             ::exercise-db/exercise)))
+(defn exercise-restarted [db [_ _]]
+  (merge db exercise-db/default-db))
+
+(rf/reg-event-db
+ ::exercise-restarted
+ exercise-restarted)
+
 
        

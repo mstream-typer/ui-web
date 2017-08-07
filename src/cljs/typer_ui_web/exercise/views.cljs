@@ -302,8 +302,8 @@
         progress (<sub [::exercise-subs/exercise-progress])
         current-line-idx (<sub [::exercise-subs/exercise-current-line])
         sheet-height (<sub [::exercise-subs/exercise-sheet-height])
-        exercise-started (<sub [::exercise-subs/exercise-started])
-        exercise-finished (<sub [::exercise-subs/exercise-finished])
+        exercise-started? (<sub [::exercise-subs/exercise-started])
+        exercise-finished? (<sub [::exercise-subs/exercise-finished])
         timer-current (<sub [::exercise-subs/exercise-timer-current])
         timer-current-formatted (<sub [::exercise-subs/exercise-timer-current-formatted])
         timer-initial (<sub [::exercise-subs/exercise-timer-initial])
@@ -314,8 +314,8 @@
      [:div.ui.massive.blue.right.ribbon.label
       [:i {:class (hourglass-class timer-current
                                    timer-initial
-                                   exercise-started
-                                   exercise-finished)}] 
+                                   exercise-started?
+                                   exercise-finished?)}] 
       timer-current-formatted]
      [:div.ui.top.attached.progress.success
       [:div.bar {:style {:width progress}}]]
@@ -342,11 +342,21 @@
       [:div.bar {:style {:width progress}}]]]))
 
 
+(defn exercise-menu []
+  [:div.ui.menu
+   [:div.item
+    [:div.ui.button
+     {:on-click #(evt> [::events/navigated-to-home])}
+     "Back"]]
+   [:div.item
+    [:div.ui.button
+     {:on-click #(evt> [::exercise-events/exercise-restarted])} 
+     "Restart"]]])
+
+
 (defn exercise-view []
   [:div
-   [:button.ui.button
-    {:on-click #(evt> [::events/navigated-to-home])}
-    "Back"]
+   [exercise-menu]
    [exercise-panel]])
 
 
