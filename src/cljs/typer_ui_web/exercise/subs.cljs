@@ -350,3 +350,37 @@
  :<- [::summary-modal-open]
  (fn [summary-modal-open _]
    summary-modal-open))
+
+(rf/reg-sub
+ ::summary-modal-message
+ :<- [::summary-modal-open]
+ :<- [::exercise-finished]
+ :<- [::exercise-timer-initial]
+ :<- [::exercise-timer-current]
+ :<- [::exercise-text-actual]
+ :<- [::exercise-text-expected]
+ (fn [[summary-modal-open
+       finished
+       timer-initial
+       timer-current
+       text-actual
+       text-expected]
+      _]
+   (cond
+     (or (not summary-modal-open)
+         (not finished)) ""
+     (zero? timer-current) (let [exercise-time (- timer-initial timer-current)
+                                 text-length (->> (map = text-expected text-actual)
+                                       (filter true?)
+                                       (count))]
+                             (str "You failed! Your speed was "
+                                  (int (/ (* 60 text-length)
+                                          exercise-time))
+                                  " c/m."))
+     :else (let [exercise-time (- timer-initial
+                                  timer-current)
+                 text-length (count text-expected)]
+             (str "You succeed! Your speed was "
+                  (int (/ (* 60 text-length)
+                          exercise-time))
+                  " c/m.")))))

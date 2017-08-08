@@ -355,13 +355,14 @@
 
 
 (defn exercise-summary-modal []
-  (let [visible (<sub [::exercise-subs/summary-modal-open])]
+  (let [visible (<sub [::exercise-subs/summary-modal-open])
+        modal-message (<sub [::exercise-subs/summary-modal-message])]
     [:div.ui.standard.modal.transition
      {:class (if true
                "visible active"
                "hidden")}
      [:div.header "Exercise finished"]
-     [:div.content "Congratulations!!!"]
+     [:div.content modal-message]
      [:div.actions
       [:div.ui.right.labeled.icon.button
        {:on-click #(evt> [::events/navigated-to-home])}
