@@ -73,12 +73,28 @@
      [login-menu]]))
 
 
+(defn exercise-card [id title desc]
+  [:div.card
+   [:div.content
+    [:div.header title]
+    [:div.description desc]]
+   [:div.ui.bottom.attached.positive.button
+    {:on-click #(evt> [::events/navigated-to-exercise])}
+    "Train"]])
+
+
+(defn course-panel []
+  (let [exercises (<sub [::subs/exercises])]
+  [:div.ui.four.cards
+   (for [exercise exercises]
+     ^{:key (::db/id exercise)}
+     [exercise-card (::db/id exercise) (::db/title exercise) (::db/description exercise)])]))
+
+
 (defn home-view []
   [:div
-   [main-menu] 
-   [:button.ui.button
-    {:on-click #(evt> [::events/navigated-to-exercise])}
-    "Start"]])
+   [main-menu]
+   [course-panel]])
 
 
 (defn view []

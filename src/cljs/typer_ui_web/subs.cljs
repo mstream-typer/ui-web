@@ -57,11 +57,19 @@
        (::db/visible))))
 
 
+(rf/reg-sub 
+ ::exercises
+ (fn [db]
+   (-> db
+       (::db/course))))
+
+
 (rf/reg-sub
  ::modal-open
  :<- [::login-menu-visible]
  (fn [login-menu-visible _]
    login-menu-visible))
+
 
 
 
