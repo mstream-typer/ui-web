@@ -3,6 +3,7 @@
             [typer-ui-web.db :as db]
             [typer-ui-web.events :as events]
             [typer-ui-web.subs :as subs]
+            [typer-ui-web.course.views :as course-views]
             [typer-ui-web.exercise.views :as exercise-views]
             [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
@@ -73,28 +74,13 @@
      [login-menu]]))
 
 
-(defn exercise-card [id title desc]
-  [:div.card
-   [:div.content
-    [:div.header title]
-    [:div.description desc]]
-   [:div.ui.bottom.attached.positive.button
-    {:on-click #(evt> [::events/navigated-to-exercise])}
-    "Train"]])
 
-
-(defn course-panel []
-  (let [exercises (<sub [::subs/exercises])]
-  [:div.ui.four.cards
-   (for [exercise exercises]
-     ^{:key (::db/id exercise)}
-     [exercise-card (::db/id exercise) (::db/title exercise) (::db/description exercise)])]))
 
 
 (defn home-view []
   [:div
    [main-menu]
-   [course-panel]])
+   [course-views/course-panel]])
 
 
 (defn view []
@@ -103,7 +89,7 @@
       ::db/home [home-view]
       ::db/exercise [exercise-views/exercise-view])))
 
-
+ 
 (defn main-panel []
   [:div#main-panel
    [dimmer]

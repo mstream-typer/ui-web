@@ -391,7 +391,7 @@
   [:div
    [exercise-menu]
    [exercise-panel]
-   [dimmer]])
+   [dimmer]]) 
 
 
 (defn key-press-listener [e]
