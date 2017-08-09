@@ -1,9 +1,23 @@
 (ns typer-ui-web.events
   (:require [re-frame.core :as rf]
+            [typer-ui-web.common :refer [evt> <sub]]
             [clojure.spec.alpha :as s]
+            [clojure.test.check.generators :as gen]
             [typer-ui-web.db :as db]
             [typer-ui-web.exercise.db :as exercise-db]))
 
+
+(s/def ::text
+  ::exercise-db/exercise-text)
+
+
+(s/def ::time
+  ::exercise-db/exercise-timer-initial)
+
+
+(s/def ::exercise
+  (s/keys :req [::text ::time]))
+  
 
 (s/def ::parameterless-event
   (s/tuple keyword?))
@@ -11,6 +25,24 @@
 
 (s/def ::input-change-event
   (s/tuple keyword? string?))
+
+
+(s/def ::failure-event
+  (s/tuple keyword? string?))
+
+
+(s/def ::navigated-to-exercise-success-event
+  (s/tuple keyword? ::exercise))
+
+
+(s/def ::on-success (s/tuple keyword?))
+
+
+(s/def ::on-failure (s/tuple keyword?)) 
+
+
+(s/def ::load-exercise
+  (s/keys ::on-success ::on-failure))
 
 
 (s/fdef
@@ -149,23 +181,144 @@
           (::exercise-db/exercise))))
 
 
+(s/def ::exercise-state-loads
+  #(let [in-loaded-exercise (-> %
+                             (:args)
+                             (:event)
+                             (second))
+         out-exercise-data (-> %
+                               (:ret)
+                               (::exercise-db/exercise)
+                               (::exercise-db/data))
+         default-exercise-data (-> exercise-db/default-db
+                                   (::exercise-db/exercise)
+                                   (::exercise-db/data))]
+     (= out-exercise-data
+        (-> default-exercise-data
+            (assoc-in [::exercise-db/text
+                       ::exercise-db/expected]
+                      (::text in-loaded-exercise))
+            (assoc-in [::exercise-db/timer
+                       ::exercise-db/initial]
+                      (::time in-loaded-exercise))
+            (assoc-in [::exercise-db/timer
+                       ::exercise-db/current]
+                      (::time in-loaded-exercise))))))
+
+
+(s/def ::loader-shows-up
+  #(-> %
+       (:ret)
+       (:db)
+       (::db/ui)
+       (::db/loader)
+       (::db/visible)))
+
+
+(s/def ::loader-hides
+  #(-> %
+       (:ret)
+       (:db)
+       (::db/ui)
+       (::db/loader)
+       (::db/visible)
+       (not)))
+
+
 (s/fdef 
  navigated-to-exercise
  :args (s/cat :db ::db/db  
               :event ::parameterless-event)
- :ret ::db/db
- :fn (s/and ::view-changes-to-exercise
-            ::exercise-state-resets))
-(defn navigated-to-exercise [db _]
-  (-> db
-      (assoc-in [::db/ui
-                 ::db/view]
-                ::db/exercise)
-      (merge exercise-db/default-db)))
+ :ret (s/keys ::db/db ::load-exercise)
+ :fn ::loader-shows-up)
+(defn navigated-to-exercise [{:keys [db]} _]
+  {:db (assoc-in db
+                 [::db/ui
+                  ::db/loader
+                  ::db/visible]
+                 true)
+   ::load-exercise {:on-success [::navigated-to-exercise-success]
+                    :on-failure [::navigated-to-exercise-failure]}})
 
-(rf/reg-event-db
+(rf/reg-event-fx
  ::navigated-to-exercise
  navigated-to-exercise)
 
+
+(s/fdef 
+ navigated-to-exercise-success
+ :args (s/cat :db ::db/db  
+              :event ::navigated-to-exercise-success-event)
+ :ret ::db/db
+ :fn (s/and ::view-changes-to-exercise
+            ::exercise-state-loads
+            ::loader-hides))
+(defn navigated-to-exercise-success [db [_ exercise]]
+  (-> db
+      (assoc-in [::db/ui
+                 ::db/loader
+                 ::db/visible]
+                false)
+      (assoc-in [::db/ui
+                 ::db/view]
+                ::db/exercise)
+      (merge (update-in exercise-db/default-db
+                        [::exercise-db/exercise
+                         ::exercise-db/data]
+                        #(-> %
+                             (assoc-in [::exercise-db/text
+                                        ::exercise-db/expected]
+                                       (::text exercise))
+                             (assoc-in [::exercise-db/timer
+                                        ::exercise-db/initial]
+                                       (::time exercise))
+                             (assoc-in [::exercise-db/timer
+                                        ::exercise-db/current]
+                                       (::time exercise)))))))
+
+(rf/reg-event-db
+ ::navigated-to-exercise-success
+ navigated-to-exercise-success)
+
+
+(s/fdef 
+ navigated-to-exercise-failure
+ :args (s/cat :db ::db/db  
+              :event ::failure-event)
+ :ret ::db/db
+ :fn ::loader-hides)
+(defn navigated-to-exercise-failure [db [_ error]]
+  (-> db
+      (assoc-in [::db/ui
+                 ::db/loader
+                 ::db/visible]
+                false)))
+
+(rf/reg-event-db
+ ::navigated-to-exercise-failure
+ navigated-to-exercise-failure)
+
+
+(defn load-exercise [{:keys [on-success on-failure]}]
+  (js/setTimeout (fn []
+                   (try (let [max-text-len 25
+                              text-generator (gen/resize max-text-len
+                                                         (s/gen ::exercise-db/exercise-text))
+                              text (gen/generate (gen/such-that #(< (quot max-text-len 2)
+                                                                    (count %)
+                                                                    max-text-len)
+                                                                text-generator
+                                                                100))
+                              text-len (count text)]
+                          (evt> (conj on-success 
+                                      {::text text
+                                       ::time (* 2 text-len)})))
+                        (catch js/Object ex
+                          (evt> (conj on-failure ex)))))
+                 500)) 
+ 
+(rf/reg-fx
+ ::load-exercise
+ load-exercise)
 
 

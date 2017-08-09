@@ -1,5 +1,6 @@
 (ns typer-ui-web.exercise.db
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [clojure.test.check.generators :as gen]))
 
 
 (def dummy-text
@@ -39,8 +40,9 @@
 
 
 (s/def ::exercise-text
-  (s/and (s/coll-of ::exercise-character :kind vector?)
-         ::singly-whitespaced))
+  (let [spec (s/and (s/coll-of ::exercise-character :kind vector?)
+         ::singly-whitespaced)]
+    (s/with-gen spec #(gen/resize 10 (s/gen spec)))))  
 
 
 (s/def ::actual-text
@@ -143,5 +145,5 @@
                        ::text {::expected dummy-text
                                ::actual []}}
                ::ui {::sheet {::height 5
-                              ::width 20}
+                              ::width 25}
                      ::summary-modal {::visible false}}}})

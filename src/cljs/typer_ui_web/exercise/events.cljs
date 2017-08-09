@@ -31,30 +31,72 @@
        (::exercise-db/started)))
 
 
-(s/def ::summary-modal-hides
-  #(not (-> %
-            (:ret)
-            (::exercise-db/exercise)
-            (::exercise-db/ui)
-            (::exercise-db/summary-modal)
-            (::exercise-db/visible))))
-
-
-(s/def ::summary-modal-hides
-  #(not (-> %
-            (:ret)
-            (::exercise-db/exercise)
-            (::exercise-db/ui)
-            (::exercise-db/summary-modal)
-            (::exercise-db/visible))))
-
-
 (s/def ::exercise-state-resets 
-  #(= (::exercise-db/exercise exercise-db/default-db)
-      (-> %
-          (:ret)
-          (::exercise-db/exercise))))
-
+  #(let [in-exercise (-> %
+                         (:args)
+                         (:db)
+                         (::exercise-db/exercise))
+         out-exercise (-> %
+                         (:ret)
+                         (::exercise-db/exercise))
+         default-exercise (::exercise-db/exercise exercise-db/default-db)]
+     (and (= (-> out-exercise
+                 ::exercise-db/ui
+                 ::exercise-db/summary-modal)
+             (-> default-exercise
+                 ::exercise-db/ui
+                 ::exercise-db/summary-modal))
+          (= (-> out-exercise
+                 ::exercise-db/ui
+                 ::exercise-db/sheet)
+             (-> in-exercise
+                 ::exercise-db/ui
+                 ::exercise-db/sheet))
+          (= (-> out-exercise
+                 ::exercise-db/data
+                 ::exercise-db/started)
+             (-> default-exercise
+                 ::exercise-db/data
+                 ::exercise-db/started))
+          (= (-> out-exercise
+                 ::exercise-db/data
+                 ::exercise-db/finished)
+             (-> default-exercise
+                 ::exercise-db/data
+                 ::exercise-db/finished))
+          (= (-> out-exercise
+                 ::exercise-db/data
+                 ::exercise-db/timer
+                 ::exercise-db/initial)
+             (-> in-exercise
+                 ::exercise-db/data
+                 ::exercise-db/timer
+                 ::exercise-db/initial))
+          (= (-> out-exercise
+                 ::exercise-db/data
+                 ::exercise-db/timer
+                 ::exercise-db/current)
+             (-> in-exercise
+                 ::exercise-db/data
+                 ::exercise-db/timer
+                 ::exercise-db/initial))
+          (= (-> out-exercise
+                 ::exercise-db/data
+                 ::exercise-db/text
+                 ::exercise-db/expected)
+             (-> in-exercise
+                 ::exercise-db/data
+                 ::exercise-db/text
+                 ::exercise-db/expected))
+          (= (-> out-exercise
+                 ::exercise-db/data
+                 ::exercise-db/text
+                 ::exercise-db/current)
+             (-> default-exercise
+                 ::exercise-db/data
+                 ::exercise-db/text
+                 ::exercise-db/current)))))
+             
 
 (s/def ::finishes-exercise-when-whole-text-matches
   #(let [ch (-> %
@@ -172,7 +214,7 @@
               (= (count in-text-actual)
                  (count in-text-expected)))
        (= out-text-actual in-text-actual)
-       true)))
+       true))) 
 
 
 (s/def ::appends-new-character-after-last-character
@@ -181,12 +223,12 @@
                (:event)
                (second))
          in-text-actual (-> %
-                           (:args)
-                           (:db)
-                           (::exercise-db/exercise)
-                           (::exercise-db/data)
-                           (::exercise-db/text)
-                           (::exercise-db/actual))
+                            (:args) 
+                            (:db)
+                            (::exercise-db/exercise)
+                            (::exercise-db/data)
+                            (::exercise-db/text)
+                            (::exercise-db/actual))
          in-text-expected (-> %
                               (:args)
                               (:db)
@@ -280,7 +322,7 @@
                         (:db)
                         (::exercise-db/exercise)
                         (::exercise-db/data)
-                        (::exercise-db/started))
+                        (::exercise-db/started)) 
          in-finished (-> %
                          (:args)
                          (:db)
@@ -457,20 +499,50 @@
 
 
 (s/fdef 
- exercise-restarted
+ exercise-restarted 
  :args (s/cat :db ::db/db  
               :event ::parameterless-event) 
  :ret ::db/db
- :fn (s/and ::exercise-state-resets
-            ::summary-modal-hides))
+ :fn ::exercise-state-resets)
 (defn exercise-restarted [db [_ _]]
   (-> db
-      (merge exercise-db/default-db)
       (assoc-in [::exercise-db/exercise
                  ::exercise-db/ui
-                 ::exercise-db/summary-modal
-                 ::exercise-db/visible]
-                false)))
+                 ::exercise-db/summary-modal]
+                (-> exercise-db/default-db
+                    (::exercise-db/exercise)
+                    (::exercise-db/ui)
+                    (::exercise-db/summary-modal)))
+      (assoc-in [::exercise-db/exercise
+                 ::exercise-db/data
+                 ::exercise-db/started]
+                (-> exercise-db/default-db
+                    (::exercise-db/exercise)
+                    (::exercise-db/data)
+                    (::exercise-db/started)))
+      (assoc-in [::exercise-db/exercise
+                 ::exercise-db/data
+                 ::exercise-db/finished]
+                (-> exercise-db/default-db
+                    (::exercise-db/exercise)
+                    (::exercise-db/data)
+                    (::exercise-db/finished)))
+      (assoc-in [::exercise-db/exercise
+                 ::exercise-db/data
+                 ::exercise-db/text
+                 ::exercise-db/actual]
+                (-> exercise-db/default-db
+                    (::exercise-db/exercise)
+                    (::exercise-db/data)
+                    (::exercise-db/text)
+                    (::exercise-db/actual)))
+      (update-in [::exercise-db/exercise
+                  ::exercise-db/data
+                  ::exercise-db/timer]
+                 #(assoc-in %
+                            [::exercise-db/current]
+                            (::exercise-db/initial %)))))
+
 
 (rf/reg-event-db
  ::exercise-restarted

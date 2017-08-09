@@ -49,6 +49,15 @@
 
 
 (rf/reg-sub
+ ::loader-visible
+ (fn [db]
+   (-> db
+       (::db/ui)
+       (::db/loader)
+       (::db/visible))))
+
+
+(rf/reg-sub
  ::modal-open
  :<- [::login-menu-visible]
  (fn [login-menu-visible _]

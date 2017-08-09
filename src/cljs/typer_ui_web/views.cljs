@@ -60,17 +60,22 @@
 
 
 (defn dimmer []
-  (let [visible (<sub [::subs/modal-open])]
+  (let [loader-visible? (<sub [::subs/loader-visible])
+        modal-open? (<sub [::subs/modal-open])]
     [:div#dimmer.ui.dimmer.modals.page.transition
-     {:class (if visible
+     {:class (if (or loader-visible?
+                     modal-open?)
                "visible active"
                "hidden")}
+     [:div.ui.loader
+      {:class (when (not loader-visible?)
+                "hidden")}] 
      [login-menu]]))
 
 
 (defn home-view []
   [:div
-   [main-menu]
+   [main-menu] 
    [:button.ui.button
     {:on-click #(evt> [::events/navigated-to-exercise])}
     "Start"]])

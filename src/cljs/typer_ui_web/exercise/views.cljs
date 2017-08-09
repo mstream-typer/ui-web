@@ -395,12 +395,18 @@
 
 
 (defn key-press-listener [e]
-  (let [key->char {"Backspace" \backspace
-                   "Enter" \newline}]
-    (evt> [::exercise-events/character-typed
-           (-> e
-               (.-key)
-               (#(get key->char % %)))])))
+  (let [modifier-keys #{"Alt"
+                        "Control"
+                        "Meta"
+                        "Shift"}
+        key->char {"Backspace" \backspace
+                   "Enter" \newline}
+        key (.-key e)]
+    (when (not (modifier-keys key))
+      (evt> [::exercise-events/character-typed
+             (-> e
+                 (.-key)
+                 (#(get key->char % %)))]))))
 
 
 (defn dispatch-timer-ticked-event []

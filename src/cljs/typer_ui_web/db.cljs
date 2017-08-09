@@ -27,6 +27,10 @@
   boolean?)
 
 
+(s/def ::loader
+  (s/keys :req [::visible]))
+
+
 (s/def ::login-menu (s/keys :req [::visible
                                   ::username
                                   ::password]))
@@ -36,7 +40,7 @@
 
 
 (s/def ::ui
-  (s/keys :req [::login-menu ::main-menu ::view]))
+  (s/keys :req [::loader ::login-menu ::main-menu ::view]))
 
 
 (s/def ::db
@@ -47,7 +51,8 @@
   (merge exercise-db/default-db
          {::user {::username ""
                   ::password ""}
-          ::ui {::view ::home  
+          ::ui {::loader {::visible false}
+                ::view ::home  
                 ::login-menu {::visible false
                               ::username ""
                               ::password ""}
