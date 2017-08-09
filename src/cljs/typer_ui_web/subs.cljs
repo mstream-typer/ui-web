@@ -7,54 +7,48 @@
 
 (rf/reg-sub
  ::user-login
- (fn [db]
-   (-> db
-       (::db/user)
-       (::db/login))))
+ #(-> %
+      (::db/user)
+      (::db/login)))
 
 
 (rf/reg-sub
  ::login-menu-visible
- (fn [db]
-   (-> db
-       (::db/ui)
-       (::db/login-menu)
-       (::db/visible))))
+ #(-> %
+      (::db/ui)
+      (::db/login-menu)
+      (::db/visible)))
 
 
 (rf/reg-sub
  ::login-menu-username
- (fn [db]
-   (-> db
-       (::db/ui)
-       (::db/login-menu)
-       (::db/username))))
+ #(-> %
+      (::db/ui)
+      (::db/login-menu)
+      (::db/username)))
 
 
 (rf/reg-sub
  ::login-menu-password
- (fn [db]
-   (-> db
-       (::db/ui)
-       (::db/login-menu)
-       (::db/password))))
+ #(-> %
+      (::db/ui)
+      (::db/login-menu)
+      (::db/password)))
 
 
 (rf/reg-sub
  ::view
- (fn [db]
-   (-> db
-       (::db/ui)
-       (::db/view))))
+ #(-> %
+      (::db/ui)
+      (::db/view)))
 
 
 (rf/reg-sub
  ::loader-visible
- (fn [db]
-   (-> db
-       (::db/ui)
-       (::db/loader)
-       (::db/visible))))
+ #(-> %
+      (::db/ui)
+      (::db/loader)
+      (::db/visible)))
 
 
 (rf/reg-sub
@@ -62,20 +56,3 @@
  :<- [::login-menu-visible]
  (fn [login-menu-visible _]
    login-menu-visible))
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-

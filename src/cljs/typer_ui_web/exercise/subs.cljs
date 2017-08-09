@@ -214,90 +214,81 @@
 
 (rf/reg-sub
  ::exercise-text-actual
- (fn [db] 
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/data)
-       (::exercise-db/text)
-       (::exercise-db/actual))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/data)
+      (::exercise-db/text)
+      (::exercise-db/actual)))
 
 
 (rf/reg-sub
  ::exercise-text-expected
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/data)
-       (::exercise-db/text)
-       (::exercise-db/expected))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/data)
+      (::exercise-db/text)
+      (::exercise-db/expected)))
 
 
 (rf/reg-sub
  ::exercise-sheet-height
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/ui)
-       (::exercise-db/sheet)
-       (::exercise-db/height))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/ui)
+      (::exercise-db/sheet)
+      (::exercise-db/height)))
 
 
 (rf/reg-sub
  ::exercise-sheet-width
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/ui)
-       (::exercise-db/sheet)
-       (::exercise-db/width))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/ui)
+      (::exercise-db/sheet)
+      (::exercise-db/width)))
 
 
 (rf/reg-sub
  ::exercise-started
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/data)
-       (::exercise-db/started))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/data)
+      (::exercise-db/started)))
 
 
 (rf/reg-sub
  ::exercise-finished
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/data)
-       (::exercise-db/finished))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/data)
+      (::exercise-db/finished)))
 
 
 (rf/reg-sub
  ::exercise-timer-initial
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/data)
-       (::exercise-db/timer)
-       (::exercise-db/initial))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/data)
+      (::exercise-db/timer)
+      (::exercise-db/initial)))
 
 
 (rf/reg-sub
  ::exercise-timer-current
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/data)
-       (::exercise-db/timer)
-       (::exercise-db/current))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/data)
+      (::exercise-db/timer)
+      (::exercise-db/current)))
 
 
 (rf/reg-sub
  ::summary-modal-open
- (fn [db]
-   (-> db
-       (::exercise-db/exercise)
-       (::exercise-db/ui)
-       (::exercise-db/summary-modal)
-       (::exercise-db/visible))))
+ #(-> %
+      (::exercise-db/exercise)
+      (::exercise-db/ui)
+      (::exercise-db/summary-modal)
+      (::exercise-db/visible)))
 
 
 (rf/reg-sub
@@ -344,12 +335,13 @@
        ::value
        index-formatted-text)))
 
- 
+
 (rf/reg-sub
  ::modal-open
  :<- [::summary-modal-open]
  (fn [summary-modal-open _]
    summary-modal-open))
+
 
 (rf/reg-sub
  ::summary-modal-message
