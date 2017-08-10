@@ -1,4 +1,4 @@
-(ns typer-ui-web.exercise.views
+(ns typer-ui-web.course.views
   (:require [typer-ui-web.common :refer [evt> <sub]]
             [typer-ui-web.course.db :as course-db]
             [typer-ui-web.events :as events]
@@ -16,12 +16,12 @@
     [:div.header title]
     [:div.description desc]]
    [:div.ui.bottom.attached.positive.button
-    {:on-click #(evt> [::events/navigated-to-exercise])}
+    {:on-click #(evt> [::events/navigated-to-exercise id])}
     "Train"]])
 
 
 (defn course-panel []
-  (let [exercises (<sub [::course-subs/exercises])]
+  (let [exercises (<sub [::course-subs/exercises])] 
   [:div.ui.four.cards
    (for [exercise exercises]
      ^{:key (::course-db/id exercise)}

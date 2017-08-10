@@ -231,13 +231,14 @@
               :event ::parameterless-event)
  :ret (s/keys ::db/db ::load-exercise)
  :fn ::loader-shows-up)
-(defn navigated-to-exercise [{:keys [db]} _]
+(defn navigated-to-exercise [{:keys [db]} [_ exercise-id]]
   {:db (assoc-in db
                  [::db/ui
                   ::db/loader
                   ::db/visible]
                  true)
-   ::load-exercise {:on-success [::navigated-to-exercise-success]
+   ::load-exercise {:exercise-id exercise-id 
+                    :on-success [::navigated-to-exercise-success]
                     :on-failure [::navigated-to-exercise-failure]}})
 
 (rf/reg-event-fx
@@ -288,6 +289,7 @@
  :ret ::db/db
  :fn ::loader-hides)
 (defn navigated-to-exercise-failure [db [_ error]]
+  (println error)
   (-> db
       (assoc-in [::db/ui
                  ::db/loader
@@ -299,23 +301,31 @@
  navigated-to-exercise-failure)
 
 
-(defn load-exercise [{:keys [on-success on-failure]}]
-  (js/setTimeout (fn []
-                   (try (let [max-text-len 25
-                              text-generator (gen/resize max-text-len
-                                                         (s/gen ::exercise-db/exercise-text))
-                              text (gen/generate (gen/such-that #(< (quot max-text-len 2)
-                                                                    (count %)
-                                                                    max-text-len)
-                                                                text-generator
-                                                                100))
-                              text-len (count text)]
-                          (evt> (conj on-success 
-                                      {::text text
-                                       ::time (* 2 text-len)})))
-                        (catch js/Object ex
-                          (evt> (conj on-failure ex)))))
-                 500)) 
+(defn load-exercise [{:keys [exercise-id on-success on-failure]}]
+  (let [text-len 50
+        exercise-chars {"1" #{\f \j}
+                        "2" #{\d \k}
+                        "3" #{\s \l}
+                        "4" #{\a \;}
+                        "5" #{\e \i}}
+        charset (get exercise-chars
+                     exercise-id
+                     exercise-db/characters)
+        char-gen (gen/frequency [[1 (gen/return \newline)]
+                                 [5 (gen/return \space)]
+                                 [25 (gen/elements charset)]])
+        text-gen (gen/such-that (partial s/valid?
+                                         ::exercise-db/exercise-text)
+                                (gen/vector char-gen text-len)
+                                100)]
+    (js/setTimeout (fn []
+                     (try (let [text (gen/generate text-gen)]
+                            (evt> (conj on-success 
+                                        {::text text
+                                         ::time (* 2 text-len)})))
+                          (catch js/Object ex
+                            (evt> (conj on-failure ex)))))
+                   500)))
  
 (rf/reg-fx
  ::load-exercise

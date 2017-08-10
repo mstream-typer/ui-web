@@ -36,8 +36,20 @@
   (s/keys :req [::id ::title ::description]))
 
 
-(s/def ::course
+(s/def ::exercises
   (s/coll-of ::exercise :kind vector?))
+
+
+(s/def ::data
+  (s/keys :req [::exercises]))
+
+
+(s/def ::ui
+  map?)
+
+
+(s/def ::course
+  (s/keys :req [::data ::ui]))
 
 
 (def default-db

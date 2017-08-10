@@ -74,9 +74,6 @@
      [login-menu]]))
 
 
-
-
-
 (defn home-view []
   [:div
    [main-menu]

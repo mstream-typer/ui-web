@@ -1,4 +1,4 @@
-(ns typer-ui-web.exercise.subs
+(ns typer-ui-web.course.subs
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [typer-ui-web.course.db :as course-db]
             [clojure.spec.alpha :as s] 
@@ -8,6 +8,7 @@
 (rf/reg-sub
  ::exercises
  #(-> %
-      (::course-db/exercise)
+      (::course-db/course)
       (::course-db/data)
       (::course-db/exercises)))
+

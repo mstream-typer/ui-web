@@ -1,5 +1,5 @@
 (ns typer-ui-web.db
-  (:require [typer-ui-web.exercise.db :as course-db]
+  (:require [typer-ui-web.course.db :as course-db]
             [typer-ui-web.exercise.db :as exercise-db]
             [clojure.spec.alpha :as s]))
 
@@ -45,7 +45,10 @@
 
 
 (s/def ::db
-  (s/keys :req [::exercise-db/exercise ::ui ::user]))
+  (s/keys :req [::course-db/course
+                ::exercise-db/exercise
+                ::ui
+                ::user]))
 
 
 (def default-db
