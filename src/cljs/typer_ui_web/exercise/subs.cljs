@@ -248,7 +248,7 @@
       (::exercise-db/width)))
 
 
-(rf/reg-sub
+n(rf/reg-sub
  ::exercise-started
  #(-> %
       (::exercise-db/exercise)

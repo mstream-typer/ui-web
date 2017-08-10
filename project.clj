@@ -10,8 +10,9 @@
    [ns-tracker "0.3.1"]]
 
   :plugins
-   [[lein-cljsbuild "1.1.6"]
-    [lein-garden "0.3.0"]]
+  [[lein-cljsbuild "1.1.6"]
+   [lein-bikeshed "0.4.1"]
+   [lein-garden "0.3.0"]]
 
   :min-lein-version
   "2.5.3"

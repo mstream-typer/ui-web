@@ -39,6 +39,7 @@
 (s/def ::course
   (s/coll-of ::exercise :kind vector?))
 
+
 (def default-db
   {::course {::data {::exercises dummy-exercises}
              ::ui {}}})

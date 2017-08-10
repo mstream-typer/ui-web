@@ -9,7 +9,7 @@
             [clojure.pprint :as pp]
             [clojure.test.check :as tc]
             [clojure.test.check.properties :as tcp]
-            [clojure.spec.alpha :as s] 
+            [clojure.spec.alpha :as s]
             [clojure.spec.test.alpha :as stest :include-macros true]
             [clojure.test :as test :include-macros true]))
 
@@ -43,7 +43,6 @@
                              {:clojure.test.check/opts {:num-tests 50}})
         failures (results->failures results)
         failures-cnt (count failures)]
-;    (pp/pprint results) 
     (when (not (empty? failures)) (do (pp/pprint "===>")
                                       (pp/pprint failures)
                                       (pp/pprint (str "there are "
@@ -51,7 +50,6 @@
                                                       " test failures"))
                                       (pp/pprint "<===")))
     (test/is (empty? (map :function failures)))))
- 
+
 
 (doo-tests)
-
