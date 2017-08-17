@@ -2,9 +2,9 @@
 
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha17"]
-   [org.clojure/clojurescript "1.9.854"]
+   [org.clojure/clojurescript "1.9.908"]
    [reagent "0.7.0"]
-   [re-frame "0.9.4"]
+   [re-frame "0.10.1"]
    [re-frisk "0.4.5"]
    [garden "1.3.2"]
    [ns-tracker "0.3.1"]]
