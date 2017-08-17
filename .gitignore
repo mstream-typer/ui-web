@@ -1,6 +1,7 @@
 /*.log
 /target
 /*-init.clj
+/resources/public/css/compiled
 /resources/public/js/compiled
 out
 .lein-*
