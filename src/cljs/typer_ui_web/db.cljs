@@ -5,7 +5,8 @@
 
 
 (s/def ::sheet-size
-  (s/and int? pos?))
+  (s/and int?
+         pos?))
 
 
 (s/def ::password
@@ -17,11 +18,13 @@
 
 
 (s/def ::user
-  (s/keys :req [::password ::username]))
+  (s/keys :req [::password
+                ::username]))
 
 
 (s/def ::view
-  #{::home ::exercise})
+  #{::home
+    ::exercise})
 
 
 (s/def ::visible
@@ -37,11 +40,19 @@
                                   ::password]))
 
 
-(s/def ::main-menu nil?)
+(s/def ::user-dropdown
+  (s/keys :req [::visible]))
+
+
+(s/def ::main-menu
+  (s/keys :req [::user-dropdown]))
 
 
 (s/def ::ui
-  (s/keys :req [::loader ::login-menu ::main-menu ::view]))
+  (s/keys :req [::loader
+                ::login-menu
+                ::main-menu
+                ::view]))
 
 
 (s/def ::db
@@ -58,7 +69,8 @@
                   ::password ""}
           ::ui {::loader {::visible false}
                 ::view ::home  
-                ::login-menu {::visible false
+                ::login-menu {::loader {::visible false}
+                              ::visible false
                               ::username ""
                               ::password ""}
-                ::main-menu nil}}))
+                ::main-menu {::user-dropdown {::visible false}}}}))

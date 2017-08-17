@@ -9,20 +9,44 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as str]))
   
- 
-(defn main-menu []
-  [:div
-   [:div.ui.large.menu
-    [:div.right.menu
-     [:a.item
-      {:on-click #(evt> [::events/login-menu-button-pressed])}
-      "Sign In"]]]])
 
+(defn sign-in-menu-item []
+  (let [username (<sub [::subs/username])
+        signed-in? (not (empty? username))]
+    (if signed-in?
+      (let [dropdown-open? (<sub [::subs/user-dropdown-visible])]
+        [:div.ui.right.dropdown.item
+         {:class (when dropdown-open? "visible active")
+          :on-click #(evt> [::events/user-dropdown-switched])}
+         username
+         [:i.dropdown.icon]
+         [:div.menu.transition
+          {:class (if dropdown-open?
+                    "visible"
+                    "hidden")}
+          [:div.item "View profile"]
+          [:div.divider]
+          [:div.item
+           {:on-click #(evt> [::events/user-signed-out])}
+           "Sign out"]]])
+      [:div.right.menu
+       [:a.item
+        {:on-click #(evt> [::events/login-menu-button-pressed])}
+        "Sing In"]])))
+
+
+
+(defn main-menu []
+    [:div
+     [:div.ui.large.menu
+      [sign-in-menu-item]]])
+      
 
 (defn login-menu []
   (let [visible (<sub [::subs/login-menu-visible])
         username (<sub [::subs/login-menu-username])
-        password (<sub [::subs/login-menu-password])]
+        password (<sub [::subs/login-menu-password])
+        loading? (<sub [::subs/login-menu-loader-visible])]
     [:div.ui.standard.modal.transition
      {:class (if visible
                "visible active"
@@ -52,10 +76,15 @@
                                  .-value)])}]]
        [:div.actions
         [:div.ui.black.deny.button
-         {:on-click #(evt> [::events/cancel-login-menu-button-pressed])}
+         {:class (when loading?
+                   "disabled")
+          :on-click #(evt> [::events/cancel-login-menu-button-pressed])}
          "Cancel"]
         [:div.ui.positive.right.labeled.icon.button
-         {:on-click #(evt> [::events/cancel-login-menu-button-pressed])}
+         {:class (when loading?
+                   "loading")
+          :on-click #(evt> [::events/user-signed-in {::db/username username
+                                                     ::db/password password}])}
          "Sign In"
          [:i.sign.in.icon]]]]]])) 
 

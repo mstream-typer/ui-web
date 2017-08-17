@@ -6,10 +6,10 @@
 
 
 (rf/reg-sub
- ::user-login
+ ::username
  #(-> %
       (::db/user)
-      (::db/login)))
+      (::db/username))) 
 
 
 (rf/reg-sub
@@ -17,6 +17,15 @@
  #(-> %
       (::db/ui)
       (::db/login-menu)
+      (::db/visible)))
+
+
+(rf/reg-sub
+ ::user-dropdown-visible
+ #(-> %
+      (::db/ui)
+      (::db/main-menu)
+      (::db/user-dropdown)
       (::db/visible)))
 
 
@@ -52,7 +61,17 @@
 
 
 (rf/reg-sub
+ ::login-menu-loader-visible
+ #(-> %
+      (::db/ui)
+      (::db/login-menu)
+      (::db/loader)
+      (::db/visible)))
+
+
+(rf/reg-sub
  ::modal-open
  :<- [::login-menu-visible]
  (fn [login-menu-visible _]
    login-menu-visible))
+
