@@ -1,5 +1,5 @@
 (ns typer-ui-web.course.views
-  (:require [typer-ui-web.common :refer [evt> <sub]]
+  (:require [typer-ui-web.common.core :refer [evt> <sub]]
             [typer-ui-web.course.db :as course-db]
             [typer-ui-web.events :as events]
             [typer-ui-web.course.events :as course-events]
@@ -10,17 +10,21 @@
             [clojure.string :as str]))
 
 
-(defn exercise-card [id title desc]
+(defn exercise-card [id
+                     title
+                     desc
+                     navigate-to-exercise-request-event]
   [:div.card
    [:div.content
     [:div.header title]
     [:div.description desc]]
    [:div.ui.bottom.attached.positive.button
-    {:on-click #(evt> [::events/navigated-to-exercise id])}
+    {:on-click #(evt> (conj navigate-to-exercise-request-event
+                            id))}
     "Train"]])
 
 
-(defn course-panel []
+(defn course-panel [navigate-to-exercise-request-event]
   (let [exercises (<sub [::course-subs/exercises])] 
   [:div.ui.four.cards
    (for [exercise exercises]
@@ -28,4 +32,5 @@
      [exercise-card
       (::course-db/id exercise)
       (::course-db/title exercise)
-      (::course-db/description exercise)])]))
+      (::course-db/description exercise)
+      navigate-to-exercise-request-event])]))

@@ -3,9 +3,15 @@
             [typer-ui-web.subs]
             [typer-ui-web.events]
             [typer-ui-web.views]
+            [typer-ui-web.course.subs]
+            [typer-ui-web.course.events]
+            [typer-ui-web.course.views]
             [typer-ui-web.exercise.subs]
             [typer-ui-web.exercise.events]
             [typer-ui-web.exercise.views]
+            [typer-ui-web.main-menu.subs]
+            [typer-ui-web.main-menu.events]
+            [typer-ui-web.main-menu.views]
             [clojure.pprint :as pp]
             [clojure.test.check :as tc]
             [clojure.test.check.properties :as tcp]
@@ -37,9 +43,15 @@
   (let [results (stest/check [`typer-ui-web.subs
                               `typer-ui-web.events
                               `typer-ui-web.views
+                              `typer-ui-web.course.subs
+                              `typer-ui-web.course.events
+                              `typer-ui-web.course.views
                               `typer-ui-web.exercise.subs
                               `typer-ui-web.exercise.events
-                              `typer-ui-web.exercise.views]
+                              `typer-ui-web.exercise.views
+                              `typer-ui-web.main-menu.subs
+                              `typer-ui-web.main-menu.events
+                              `typer-ui-web.main-menu.views]
                              {:clojure.test.check/opts {:num-tests 50}})
         failures (results->failures results)
         failures-cnt (count failures)]

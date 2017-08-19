@@ -1,9 +1,8 @@
 (ns typer-ui-web.exercise.views
-  (:require [typer-ui-web.common :refer [evt> <sub]]
+  (:require [typer-ui-web.common.core :refer [evt> <sub]]
             [typer-ui-web.exercise.db :as exercise-db]
-            [typer-ui-web.events :as events]
-            [typer-ui-web.exercise.events :as exercise-events]
-            [typer-ui-web.exercise.subs :as exercise-subs]
+            [typer-ui-web.exercise.events :as events]
+            [typer-ui-web.exercise.subs :as subs]
             [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
             [clojure.test.check.generators :as gen]
@@ -296,17 +295,17 @@
 
 
 (defn exercise-panel [{:keys [sheet-width sheet-height]}]
-  (let [text-actual (<sub [::exercise-subs/exercise-text-actual])
-        text-expected (<sub [::exercise-subs/exercise-text-expected])
-        formatted-text (<sub [::exercise-subs/exercise-text-formatted])
-        progress (<sub [::exercise-subs/exercise-progress])
-        current-line-idx (<sub [::exercise-subs/exercise-current-line])
-        sheet-height (<sub [::exercise-subs/exercise-sheet-height])
-        exercise-started? (<sub [::exercise-subs/exercise-started])
-        exercise-finished? (<sub [::exercise-subs/exercise-finished])
-        timer-current (<sub [::exercise-subs/exercise-timer-current])
-        timer-current-formatted (<sub [::exercise-subs/exercise-timer-current-formatted])
-        timer-initial (<sub [::exercise-subs/exercise-timer-initial])
+  (let [text-actual (<sub [::subs/exercise-text-actual])
+        text-expected (<sub [::subs/exercise-text-expected])
+        formatted-text (<sub [::subs/exercise-text-formatted])
+        progress (<sub [::subs/exercise-progress])
+        current-line-idx (<sub [::subs/exercise-current-line])
+        sheet-height (<sub [::subs/exercise-sheet-height])
+        exercise-started? (<sub [::subs/exercise-started])
+        exercise-finished? (<sub [::subs/exercise-finished])
+        timer-current (<sub [::subs/exercise-timer-current])
+        timer-current-formatted (<sub [::subs/exercise-timer-current-formatted])
+        timer-initial (<sub [::subs/exercise-timer-initial])
         whitespace-symbols {\space \u23b5 
                             \newline \u21b5}
         sheet-middle (quot (dec sheet-height) 2)]
@@ -342,21 +341,21 @@
       [:div.bar {:style {:width progress}}]]]))
 
 
-(defn exercise-menu []
+(defn exercise-menu [navigate-to-home-requested-event]
   [:div.ui.menu
    [:div.item
     [:div.ui.button
-     {:on-click #(evt> [::events/navigated-to-home])}
+     {:on-click #(evt> navigate-to-home-requested-event)}
      "Back"]]
    [:div.item
     [:div.ui.button
-     {:on-click #(evt> [::exercise-events/exercise-restarted])} 
+     {:on-click #(evt> [::events/exercise-restarted])} 
      "Restart"]]])
 
 
-(defn exercise-summary-modal []
-  (let [visible (<sub [::exercise-subs/summary-modal-open])
-        modal-message (<sub [::exercise-subs/summary-modal-message])]
+(defn exercise-summary-modal [navigate-to-home-requested-event]
+  (let [visible (<sub [::subs/summary-modal-open])
+        modal-message (<sub [::subs/summary-modal-message])]
     [:div.ui.standard.modal.transition
      {:class (if true
                "visible active"
@@ -365,33 +364,35 @@
      [:div.content modal-message]
      [:div.actions
       [:div.ui.right.labeled.icon.button
-       {:on-click #(evt> [::events/navigated-to-home])}
+       {:on-click #(evt> navigate-to-home-requested-event)}
        "Main menu"
        [:i.home.icon]]
       [:div.ui.right.labeled.icon.button
-       {:on-click #(evt> [::exercise-events/exercise-restarted])} 
+       {:on-click #(evt> [::events/exercise-restarted])} 
        "Repeat"
        [:i.repeat.icon]]
       [:div.ui.positive.right.labeled.icon.button
-       {:on-click #(evt> [::exercise-events/exercise-restarted])} 
+       {:on-click #(evt> [::events/exercise-restarted])} 
        "Next exercise"
        [:i.arrow.circle.right.icon]]]]))
 
 
-(defn dimmer []
-  (let [active (<sub [::exercise-subs/modal-open])]
+(defn dimmer [navigate-to-home-requested-event]
+  (let [active (<sub [::subs/modal-open])]
     [:div#dimmer.ui.dimmer.modals.page.transition
      {:class (if active
                "visible active"
                "hidden")}
-     [exercise-summary-modal]]))
+     [exercise-summary-modal
+      navigate-to-home-requested-event]]))
 
 
-(defn exercise-view []
+(defn exercise-view [navigate-to-home-requested-event]
   [:div
-   [exercise-menu]
+   [exercise-menu navigate-to-home-requested-event]
    [exercise-panel]
-   [dimmer]]) 
+   [dimmer
+    navigate-to-home-requested-event]])
 
 
 (defn key-press-listener [e]
@@ -403,14 +404,14 @@
                    "Enter" \newline}
         key (.-key e)]
     (when (not (modifier-keys key))
-      (evt> [::exercise-events/character-typed
+      (evt> [::events/character-typed
              (-> e
                  (.-key)
                  (#(get key->char % %)))]))))
 
 
 (defn dispatch-timer-ticked-event []
-  (evt> [::exercise-events/timer-ticked]))
+  (evt> [::events/timer-ticked]))
 
 
 (defonce register-keypress-listener 

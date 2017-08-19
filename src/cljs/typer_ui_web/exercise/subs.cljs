@@ -1,6 +1,6 @@
 (ns typer-ui-web.exercise.subs
   (:require-macros [reagent.ratom :refer [reaction]])
-  (:require [typer-ui-web.exercise.db :as exercise-db]
+  (:require [typer-ui-web.exercise.db :as db]
             [clojure.spec.alpha :as s] 
             [re-frame.core :as rf]))
 
@@ -11,7 +11,7 @@
 
 
 (s/def ::value
-  (s/coll-of ::exercise-db/exercise-text))
+  (s/coll-of ::db/exercise-text))
 
 
 (s/def ::keeps-same-length
@@ -60,15 +60,15 @@
 
 
 (s/def ::segment
-  (s/and ::exercise-db/exercise-text
+  (s/and ::db/exercise-text
          #(or (s/valid? ::new-line-present %)
               (s/valid? ::space-present %))))
 
 
 (s/fdef
  words-fit-sheet-width?
- :args (s/cat :text ::exercise-db/exercise-text
-              :sheet-width ::exercise-db/width)
+ :args (s/cat :text ::db/exercise-text
+              :sheet-width ::db/width)
  :ret boolean?
  :fn #(let [in-text (-> %
                         (:args)
@@ -79,10 +79,10 @@
             result (% :ret)]
         (= result 
            (->> (partition-by (partial s/valid?
-                                       ::exercise-db/whitespace)
+                                       ::db/whitespace)
                               in-text)
                 (filter (complement (comp (partial s/valid?
-                                                   ::exercise-db/whitespace)
+                                                   ::db/whitespace)
                                           first)))
                 (map count)
                 (cons 0)
@@ -92,10 +92,10 @@
   (memoize
    (fn [text sheet-width]
      (->> (partition-by (partial s/valid?
-                                 ::exercise-db/whitespace)
+                                 ::db/whitespace)
                         text)
           (filter (complement (comp (partial s/valid?
-                                             ::exercise-db/whitespace)
+                                             ::db/whitespace)
                                     first)))
           (map count)
           (cons 0)
@@ -184,8 +184,8 @@
 
 (s/fdef
  format-text
- :args (s/cat :text ::exercise-db/exercise-text  
-              :sheet-width ::exercise-db/width)
+ :args (s/cat :text ::db/exercise-text  
+              :sheet-width ::db/width)
  :ret (s/keys :req [::result]
               :opt [::value ::error])
  :fn (s/and ::keeps-same-length
@@ -214,81 +214,72 @@
 
 (rf/reg-sub
  ::exercise-text-actual
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/data)
-      (::exercise-db/text)
-      (::exercise-db/actual)))
+ (comp ::db/actual
+       ::db/text
+       ::db/data
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-text-expected
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/data)
-      (::exercise-db/text)
-      (::exercise-db/expected)))
+ (comp ::db/expected
+       ::db/text
+       ::db/data
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-sheet-height
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/ui)
-      (::exercise-db/sheet)
-      (::exercise-db/height)))
+ (comp ::db/height
+       ::db/sheet
+       ::db/ui
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-sheet-width
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/ui)
-      (::exercise-db/sheet)
-      (::exercise-db/width)))
+ (comp ::db/width
+       ::db/sheet
+       ::db/ui
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-started
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/data)
-      (::exercise-db/started)))
+ (comp ::db/started
+       ::db/data
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-finished
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/data)
-      (::exercise-db/finished)))
+ (comp ::db/finished
+       ::db/data
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-timer-initial
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/data)
-      (::exercise-db/timer)
-      (::exercise-db/initial)))
+ (comp ::db/initial
+       ::db/timer
+       ::db/data
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::exercise-timer-current
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/data)
-      (::exercise-db/timer)
-      (::exercise-db/current)))
+ (comp ::db/current
+       ::db/timer
+       ::db/data
+       ::db/exercise))
 
 
 (rf/reg-sub
  ::summary-modal-open
- #(-> %
-      (::exercise-db/exercise)
-      (::exercise-db/ui)
-      (::exercise-db/summary-modal)
-      (::exercise-db/visible)))
+ (comp ::db/visible
+       ::db/summary-modal
+       ::db/ui
+       ::db/exercise))
 
 
 (rf/reg-sub

@@ -1,4 +1,4 @@
-(ns typer-ui-web.common
+(ns typer-ui-web.common.core
   (:require [re-frame.core :as rf]))
 
 

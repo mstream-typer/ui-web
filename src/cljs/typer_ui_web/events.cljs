@@ -1,27 +1,11 @@
 (ns typer-ui-web.events
   (:require [re-frame.core :as rf]
-            [typer-ui-web.common :refer [evt> <sub]]
+            [typer-ui-web.common.core :refer [evt> <sub]]
+            [typer-ui-web.common.events :as common-events]
             [clojure.spec.alpha :as s]
             [clojure.test.check.generators :as gen]
             [typer-ui-web.db :as db]
             [typer-ui-web.exercise.db :as exercise-db]))
-
-
-(s/def ::credentials
-  (s/keys :req [::db/username
-                ::db/password]))
-
-
-(s/def ::event-handler-db
-  (s/keys :req-un [::db/db]))
-
-
-(s/def ::coeffects
-  ::event-handler-db)
-
-
-(s/def ::effects
-  ::event-handler-db)
 
 
 (s/def ::text
@@ -30,41 +14,19 @@
 
 (s/def ::time
   ::exercise-db/exercise-timer-initial)
+
+
 (s/def ::exercise
   (s/keys :req [::text
                 ::time])) 
-  
-
-(s/def ::parameterless-event
-  (s/tuple keyword?))
 
 
-(s/def ::user-signed-in-event
-  (s/tuple keyword?
-           ::credentials))
-
-
-(s/def ::user-signed-in-success-event
-  (s/tuple keyword?
-           ::credentials))
-
-
-(s/def ::input-change-event
+(s/def ::navigate-to-exercise-requested-event
   (s/tuple keyword?
            string?))
 
 
-(s/def ::failure-event
-  (s/tuple keyword?
-           string?))
-
-
-(s/def ::navigated-to-exercise-event
-  (s/tuple keyword?
-           string?))
-
-
-(s/def ::navigated-to-exercise-success-event
+(s/def ::navigate-to-exercise-succeed-event
   (s/tuple keyword?
            ::exercise))
 
@@ -87,72 +49,6 @@
                 ::on-failure]))
 
 
-(s/def ::sign-in
-  (s/keys :req [::credentials
-                ::on-success
-                ::on-failure]))
-
-
-(s/def ::login-menu-visible
-  (comp ::db/visible
-        ::db/login-menu
-        ::db/ui
-        :db))
-
-
-(s/def ::login-menu-not-visible
-  (comp not
-        ::db/visible
-        ::db/login-menu
-        ::db/ui
-        :db))
-
-
-(s/def ::login-menu-loader-visible
-  (comp ::db/visible
-        ::db/loader
-        ::db/login-menu
-        ::db/ui
-        :db))
-
-
-(s/def ::login-menu-loader-not-visible
-  (comp not
-        ::db/visible
-        ::db/loader
-        ::db/login-menu
-        ::db/ui
-        :db))
-
-
-(s/def ::user-dropdown-switched
-  #(let [in-dropdown-visible (-> %
-                                 (:args)
-                                 (:cofx)
-                                 (:db)
-                                 (::db/ui)
-                                 (::db/main-menu)
-                                 (::db/user-dropdown)
-                                 (::db/visible))
-         out-dropdown-visible (-> %
-                                  (:ret)
-                                  (:db)
-                                  (::db/ui)
-                                  (::db/main-menu)
-                                  (::db/user-dropdown)
-                                  (::db/visible))]
-     (not= out-dropdown-visible
-           in-dropdown-visible)))
-
-
-
-
-
-
-
-
-
-
 (s/def ::view-changes-to-exercise 
   #(= ::db/exercise
       (-> %
@@ -166,15 +62,6 @@
       (-> %
           (:db)
           (::exercise-db/exercise))))
-
-
-(s/def ::login-menu-inputs-clear
-  #(let [login-menu (-> %
-                        (:db)
-                        (::db/ui)
-                        (::db/login-menu))]
-     (and (empty? (::db/username login-menu))
-          (empty? (::db/password login-menu)))))
 
 
 (s/def ::exercise-state-loads
@@ -220,45 +107,11 @@
        (not)))
 
 
-(s/def ::sets-credentials-from-event
-  #(let [event-creds (-> %
-                         (:args)
-                         (:event)
-                         (second))
-         user-creds (-> %
-                        (:ret)
-                        (:db)
-                        (::db/user))]
-     (= user-creds
-        event-creds)))
-
-
-(s/def ::resets-credentials
-  #(let [default-creds (::db/user db/default-db)]
-     (= default-creds
-        (-> %
-            (:db)
-            (::db/user)))))
-
-
-(s/def ::causes-sign-in-effect
-  #(let [event-creds (-> %
-                         (:args)
-                         (:event)
-                         (second))
-         sign-in-effect-creds (-> %
-                            (:ret)
-                            (::sign-in)
-                            (::credentials))]
-     (= event-creds
-        sign-in-effect-creds)))
-
-
 (s/fdef
  db-initialized
- :args (s/cat :cofx ::coeffects
-              :event ::parameterless-event)
- :ret (s/and ::effects
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::common-events/parameterless-event)
+ :ret (s/and ::common-events/effects
              (partial = {:db db/default-db})))
 (defn db-initialized [_ _]
   {:db db/default-db})
@@ -269,277 +122,61 @@
 
 
 (s/fdef 
- user-dropdown-switched
- :args (s/cat :cofx ::coeffects
-              :event ::parameterless-event)
- :ret ::effects
- :fn ::user-dropdown-switched)
-(defn user-dropdown-switched [{:keys [db]}
-                              _] 
-  {:db (-> db
-           (update-in [::db/ui
-                       ::db/main-menu
-                       ::db/user-dropdown
-                       ::db/visible]
-                     not))})
-
-(rf/reg-event-fx
- ::user-dropdown-switched
- user-dropdown-switched)
-
-
-(s/fdef 
- login-menu-button-pressed
- :args (s/cat :cofx ::coeffects
-              :event ::parameterless-event)
- :ret (s/and ::effects
-             ::login-menu-visible))
-(defn login-menu-button-pressed [{:keys [db]}
-                                 [_ character]] 
-  {:db (-> db
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/visible]
-                     true))})
-
-(rf/reg-event-fx
- ::login-menu-button-pressed
- login-menu-button-pressed)
-
-
-(s/fdef 
- cancel-login-menu-button-pressed
- :args (s/cat :cofx ::coeffects
-              :event ::parameterless-event)
- :ret (s/and ::effects
-             ::login-menu-not-visible))
-(defn cancel-login-menu-button-pressed [{:keys [db]}
-                                        _] 
-  {:db (-> db
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/visible]
-                     false))})
-
-(rf/reg-event-fx
- ::cancel-login-menu-button-pressed
- cancel-login-menu-button-pressed)
-
-
-(s/fdef 
- user-signed-in
- :args (s/cat :cofx ::coeffects  
-              :event ::user-signed-in-event)
- :ret (s/and ::coeffects
-             ::login-menu-visible
-             ::login-menu-loader-visible
-             (s/keys :req [::sign-in]))
- :fn ::causes-sign-in-effect)
-(defn user-signed-in [{:keys [db]}
-                      [_ creds]]
-    {:db (-> db
-             (assoc-in [::db/ui
-                        ::db/login-menu
-                        ::db/visible]
-                       true)
-             (assoc-in [::db/ui
-                        ::db/login-menu
-                        ::db/loader
-                        ::db/visible]
-                       true))
-     ::sign-in {::credentials creds
-                ::on-success [::user-signed-in-success]
-                ::on-failure [::user-signed-in-failure]}})
-
-(rf/reg-event-fx
- ::user-signed-in
- user-signed-in)
-
-
-(s/fdef 
- user-signed-in-success
- :args (s/cat :cofx ::coeffects
-              :event ::user-signed-in-success-event)
- :ret (s/and ::effects
-             ::login-menu-not-visible
-             ::login-menu-loader-not-visible)
- :fn ::sets-credentials-from-event)
-(defn user-signed-in-success [{:keys [db]}
-                              [_ credentials]]
-  {:db (-> db 
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/visible]
-                     false)
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/loader
-                      ::db/visible]
-                     false)
-           (assoc-in [::db/user]
-                     credentials))})
-
-(rf/reg-event-fx
- ::user-signed-in-success
- user-signed-in-success)
-
-
-(s/fdef 
- user-signed-in-failure
- :args (s/cat :cofx ::coeffects
-              :event ::parameterless-event)
- :ret (s/and ::effects
-             ::login-menu-not-visible
-             ::login-menu-loader-not-visible))
-(defn user-signed-in-failure [{:keys [db]}
-                              _] 
-  {:db (-> db
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/visible]
-                     false)
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/loader
-                      ::db/visible]
-                     false))})
-
-(rf/reg-event-fx
- ::user-signed-in-failure
- user-signed-in-success)
-
-
-(s/fdef 
- user-signed-out
- :args (s/cat :cofx ::coeffects  
-              :event ::parameterless-event)
- :ret (s/and ::coeffects
-             ::resets-credentials))
-(defn user-signed-out [{:keys [db]}
-                      _]
-    {:db (-> db
-             (assoc-in [::db/user]
-                       (::db/user db/default-db)))})
-
-(rf/reg-event-fx
- ::user-signed-out
- user-signed-out)
-
-
-(s/fdef 
- login-menu-username-changed
- :args (s/cat :cofx ::coeffects
-              :event ::input-change-event)
- :ret ::effects
- :fn #(let [in-username (-> %
-                            :args
-                            :event
-                            second)
-            out-login-menu-username (-> %
-                                        :ret
-                                        :db
-                                        ::db/ui
-                                        ::db/login-menu
-                                        ::db/username)]
-        (= out-login-menu-username in-username)))
-(defn login-menu-username-changed [{:keys [db]}
-                                   [_ username]]
-  {:db (-> db
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/username] username))})
-
-(rf/reg-event-fx
- ::login-menu-username-changed
- login-menu-username-changed)
-
-
-(s/fdef 
- login-menu-password-changed
- :args (s/cat :cofx ::coeffects
-              :event ::input-change-event)
- :ret ::effects
- :fn #(let [in-password (-> %
-                            :args
-                            :event
-                            second)
-            out-login-menu-password (-> %
-                                        :ret
-                                        :db
-                                        ::db/ui
-                                        ::db/login-menu
-                                        ::db/password)]
-        (= out-login-menu-password
-           in-password)))
-(defn login-menu-password-changed [{:keys [db]}
-                                   [_ password]]
-  {:db (-> db
-           (assoc-in [::db/ui
-                      ::db/login-menu
-                      ::db/password]
-                     password))})
-
-(rf/reg-event-fx
- ::login-menu-password-changed
- login-menu-password-changed)
-
-
-(s/fdef 
- navigated-to-home
- :args (s/cat :cofx ::coeffects
-              :event ::parameterless-event)
- :ret ::effects
+ navigate-to-home-requested
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::common-events/parameterless-event)
+ :ret ::common-events/effects
  :fn #(let [out-view (-> %
                          :ret
                          :db
                          ::db/ui
                          ::db/view)]
         (= out-view ::db/home)))
-(defn navigated-to-home [{:keys [db]}
-                         _]
+(defn navigate-to-home-requested [{:keys [db]}
+                                  _]
   {:db (-> db
            (assoc-in [::db/ui
                       ::db/view]
                      ::db/home))})
 
 (rf/reg-event-fx
- ::navigated-to-home
- navigated-to-home)
+ ::navigate-to-home-requested
+ navigate-to-home-requested)
 
 
 (s/fdef 
- navigated-to-exercise
- :args (s/cat :cofx ::coeffects
-              :event ::navigated-to-exercise-event)
- :ret (s/and ::effects
+ navigate-to-exercise-requested
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::navigate-to-exercise-requested-event)
+ :ret (s/and ::common-events/effects
              ::loader-shows-up
              (s/keys :req [::load-exercise])))
-(defn navigated-to-exercise [{:keys [db]}
-                             [_ exercise-id]]
-  {:db (assoc-in db
-                 [::db/ui
-                  ::db/loader
-                  ::db/visible]
-                 true)
+(defn navigate-to-exercise-requested [{:keys [db]}
+                                      [_ exercise-id]]
+  {:db (-> db
+           (assoc-in [::db/ui
+                      ::db/loader
+                      ::db/visible]
+                     true))
    ::load-exercise {::exercise-id exercise-id 
-                    ::on-success [::navigated-to-exercise-success]
-                    ::on-failure [::navigated-to-exercise-failure]}})
+                    ::on-success [::navigate-to-exercise-succeed]
+                    ::on-failure [::navigate-to-exercise-failed]}})
 
 (rf/reg-event-fx
- ::navigated-to-exercise
- navigated-to-exercise)
+ ::navigate-to-exercise-requested
+ navigate-to-exercise-requested)
 
 
 (s/fdef 
- navigated-to-exercise-success
- :args (s/cat :cofx ::coeffects
-              :event ::navigated-to-exercise-success-event)
- :ret (s/and ::effects
+ navigate-to-exercise-succeed
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::navigate-to-exercise-succeed-event)
+ :ret (s/and ::common-events/effects
              ::loader-hides
              ::view-changes-to-exercise)
  :fn ::exercise-state-loads)
-(defn navigated-to-exercise-success [{:keys [db]}
-                                     [_ exercise]]
+(defn navigate-to-exercise-succeed [{:keys [db]}
+                                    [_ exercise]]
   {:db (-> db
            (assoc-in [::db/ui
                       ::db/loader
@@ -563,18 +200,18 @@
                                             (::time exercise))))))})
 
 (rf/reg-event-fx
- ::navigated-to-exercise-success
- navigated-to-exercise-success)
+ ::navigate-to-exercise-succeed
+ navigate-to-exercise-succeed)
 
 
 (s/fdef 
- navigated-to-exercise-failure
- :args (s/cat :cofx ::coeffects
-              :event ::failure-event)
- :ret (s/and ::effects
+ navigate-to-exercise-failed
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::common-events/failure-event)
+ :ret (s/and ::common-events/effects
              ::loader-hides))
-(defn navigated-to-exercise-failure [{:keys [db]}
-                                     [_ error]]
+(defn navigate-to-exercise-failed [{:keys [db]}
+                                   [_ error]]
   {:db (-> db
            (assoc-in [::db/ui
                       ::db/loader
@@ -582,8 +219,8 @@
                      false))})
 
 (rf/reg-event-fx
- ::navigated-to-exercise-failure
- navigated-to-exercise-failure)
+ ::navigate-to-exercise-failed
+ navigate-to-exercise-failed)
 
 
 (defn load-exercise [{:keys [::exercise-id
@@ -618,18 +255,3 @@
 (rf/reg-fx
  ::load-exercise
  load-exercise)
-
-
-(defn sign-in [{:keys [::credentials
-                       ::on-success
-                       ::on-failure]}]
-  (js/setTimeout #(try (evt> (conj on-success
-                                   credentials))
-                       (catch js/Object ex
-                         (evt> (conj on-failure
-                                     ex))))
-                 500))
-
-(rf/reg-fx
- ::sign-in
- sign-in)
