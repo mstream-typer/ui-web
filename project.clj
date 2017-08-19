@@ -87,4 +87,10 @@
              :compiler {:main typer-ui-web.runner
                         :output-to "resources/public/js/compiled/test.js"
                         :output-dir "resources/public/js/compiled/test/out"
-                        :optimizations :none}}]})
+                        :optimizations :none}}]}
+
+  :aliases
+  {"build" ["do"
+            ["cljsbuild" "once"]
+            ["garden" "once"]
+            ["docker" "build"]]})
