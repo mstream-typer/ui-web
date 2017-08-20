@@ -1,0 +1,16 @@
+version: "2"
+
+services:
+
+  typer-ui-web:
+    container_name: typer-ui-web
+    image: mstream/typer-ui-web:0.1.0-SNAPSHOT
+    ports:
+      - "80:80"
+  
+  typer-service:
+    container_name: typer-service
+    image: rodolpheche/wiremock:2.7.1
+    ports:
+      - "8080:8080"
+  

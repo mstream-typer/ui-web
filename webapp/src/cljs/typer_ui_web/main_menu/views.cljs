@@ -11,7 +11,7 @@
         username (<sub [::subs/login-menu-username])
         password (<sub [::subs/login-menu-password])
         loading? (<sub [::subs/login-menu-loader-visible])]
-    [:div.ui.standard.modal.transition
+    [:div#login-menu.ui.standard.modal.transition
      {:class (if visible
                "visible active"
                "hidden")}
@@ -76,10 +76,10 @@
       [:div.right.menu
        [:a.item
         {:on-click #(evt> [::events/login-menu-button-pressed])}
-        "Sing In"]])))
+        "Sign In"]])))
 
 
 (defn main-menu []
-    [:div
+    [:div#main-menu
      [:div.ui.large.menu
       [sign-in-menu-item]]])

@@ -1,0 +1,9 @@
+Feature: Home View
+
+  Scenario: user enters successfuly loaded home page   [90m# home_view.feature:3[0m
+    [90mGiven [0m[90mtyper service responds with course exercises[0m [90m# steps.clj:9[0m
+[1A    [32mGiven [0m[32mtyper service responds with course exercises[0m [90m# steps.clj:9[0m
+    [90mWhen [0m[90musers enter the home page[0m                     [90m# steps.clj:13[0m
+[1A    [32mWhen [0m[32musers enter the home page[0m                     [90m# steps.clj:13[0m
+    [90mThen [0m[90muser should see following exercises[0m           [90m# steps.clj:21[0m
+[1A    [32mThen [0m[32muser should see following exercises[0m           [90m# steps.clj:21[0m

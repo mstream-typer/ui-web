@@ -14,7 +14,7 @@
                      title
                      desc
                      navigate-to-exercise-request-event]
-  [:div.card
+  [:div.exercise-item.card
    [:div.content
     [:div.header title]
     [:div.description desc]]
@@ -26,7 +26,7 @@
 
 (defn course-panel [navigate-to-exercise-request-event]
   (let [exercises (<sub [::course-subs/exercises])] 
-  [:div.ui.four.cards
+  [:div#course-panel.ui.four.cards
    (for [exercise exercises]
      ^{:key (::course-db/id exercise)}
      [exercise-card

@@ -9,7 +9,7 @@
    [re-frisk "0.4.5"]
    [garden "1.3.2"]
    [ns-tracker "0.3.1"]]
-  
+
 
   :plugins
   [[lein-ancient "0.6.10"]
@@ -58,7 +58,6 @@
 
   :docker
   {:image-name "mstream/typer-ui-web"
-   :image-version "latest"
    :dockerfile "Dockerfile"
    :build-dir  "."}
 
