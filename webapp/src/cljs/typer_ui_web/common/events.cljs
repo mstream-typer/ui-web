@@ -24,3 +24,5 @@
            string?))
 
 
+;(s/def ::view-changed)
+

@@ -1,28 +1,126 @@
 (require '[clojure.test :as test])
+(require '[clojure.string :as str])
 (require '[etaoin.api :as eta])
 (require '[etaoin.keys :as keys])
+(require '[org.httpkit.client :as http])
+(require '[clojure.data.json :as json])
 
 
-(def driver (eta/phantom))
+(def wait-opts {:timeout 2
+                :interval 0.2})
 
 
-(Given #"^typer service responds with course exercises$"
-       [] nil)
+(defn wait-visible [driver css]
+  (eta/wait-visible driver
+                    css
+                    wait-opts))
+
+
+(defn wait-invisible [driver css]
+  (eta/wait-invisible driver
+                      css
+                      wait-opts))
+
+
+(def course-api-request-body-pattern
+  "^\\{course\\(id:\\w+\\)\\{name exercises\\{id name description\\}\\}\\}$")
+
+
+(def wiremock-api "http://localhost:8080/__admin")
+
+
+(def wiremock-mappings (str wiremock-api
+                            "/mappings"))
+
+
+(def postmortem-opts {:dir "/tmp"})
+
+  
+(def driver (eta/boot-driver :phantom
+                             {:args ["--web-security=false"]}))
+
+
+(eta/use-css driver)
+
+
+(defn reset-stubs []
+  (let [{:keys [status]} @(http/delete wiremock-mappings)]))
+
+
+(defn stub [request response]
+  (let [{:keys [status body]} @(http/post wiremock-mappings
+                                     {:body (json/write-str {"request" request
+                                                             "response" response})})]
+    (when (not= 201 status)
+      (throw (Exception. (str "error while stubbing: "
+                              body))))))
+
+
+(Before
+ []
+ (reset-stubs))
+
+
+(Given
+ #"^typer service responds with course exercises$"
+ [exercises]
+ (stub {:method "GET"
+        :urlPath "/api"
+        :queryParameters {:query {:matches course-api-request-body-pattern}}}
+       {:status 200
+        :jsonBody {:data {:course {:name "course0"
+                                   :exercises (table->rows exercises)}}}}))
 
        
-(When #"^users enter the home page$"
-      []
-      (doto driver
-        (eta/go "http://localhost")
-        (eta/wait-visible {:css "#main-panel"})
-        (eta/wait-visible {:css "#course-panel"})))
-      
+(When
+ #"^user enters the home page$"
+ []
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (eta/go "http://localhost"))))
 
-(Then #"^user should see following exercises$"
-      []
-      (let [exercise-items (eta/query-all driver
-                                          {:css "#course-panel .exercise-item"})]
-        (test/is (= 5 (count exercise-items)))))
 
+(When
+ #"^user navigates to the course page$"
+ []
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+      (wait-visible "#main-panel .course.button")
+      (eta/click "#main-panel .course.button"))))
+
+
+(Then
+ #"^user should see following exercises$"
+ [exercises-data]
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+     (wait-visible "#course-panel"))
+   (let [expected-exercises (set (table->rows exercises-data))
+         exercises-css ".exercise-item"
+         exercise-texts (->> (eta/query-all driver
+                                            exercises-css)
+                             (map (partial eta/get-element-text-el
+                                           driver)))]
+     (test/is (= (count expected-exercises)
+                 (count exercise-texts)))
+     (test/is (every? (fn [{:keys [name
+                                   description]}]
+                        (some (fn [exercise-text]
+                                (and (str/includes? exercise-text
+                                                    name)
+                                     (str/includes? exercise-text
+                                                    description)
+                                     (str/includes? exercise-text
+                                                    "Train")))
+                              exercise-texts))
+                      expected-exercises)))))
 
 

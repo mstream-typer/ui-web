@@ -12,7 +12,7 @@
 
 
 (defn dimmer []
-  (let [loader-visible? (<sub [::subs/loader-visible])
+  (let [loader-visible? (<sub [::subs/loading?])
         modal-open? (<sub [::subs/modal-open])]
     [:div#dimmer.ui.dimmer.modals.page.transition
      {:class (if (or loader-visible?
@@ -28,14 +28,17 @@
 (defn home-view []
   [:div
    [main-menu-views/main-menu]
-   [course-views/course-panel
-    [::events/navigate-to-exercise-requested]]])
+   [:div.course.ui.button
+    {:on-click #(evt> [::events/navigated-to-course 1])}
+    "Course"]])
 
 
 (defn view []
   (let [view (<sub [::subs/view])]
     (case view
       ::db/home [home-view]
+      ::db/course [course-views/course-view
+                   [::events/navigate-to-exercise-requested]]
       ::db/exercise [exercise-views/exercise-view
                      [::events/navigate-to-home-requested]])))
 

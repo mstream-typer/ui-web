@@ -1,6 +1,7 @@
 (ns typer-ui-web.exercise.db
   (:require [clojure.spec.alpha :as s]
-            [clojure.test.check.generators :as gen]))
+            [clojure.test.check.generators :as gen]
+            [typer-ui-web.common.db :as common-db]))
 
 
 (def dummy-text
@@ -126,7 +127,7 @@
 
 
 (s/def ::summary-modal
-  (s/keys :req [::visible]))
+  (s/keys :req [::common-db/visible]))
   
 
 (s/def ::ui
@@ -146,4 +147,4 @@
                                ::actual []}}
                ::ui {::sheet {::height 5
                               ::width 25}
-                     ::summary-modal {::visible false}}}})
+                     ::summary-modal {::common-db/visible false}}}})

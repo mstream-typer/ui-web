@@ -1,6 +1,7 @@
 (ns typer-ui-web.main-menu.subs
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [typer-ui-web.main-menu.db :as db]
+            [typer-ui-web.common.db :as common-db]
             [clojure.spec.alpha :as s] 
             [re-frame.core :as rf]))
 
@@ -47,8 +48,8 @@
 
 (rf/reg-sub
  ::login-menu-loader-visible
- (comp ::db/visible
-       ::db/loader
+ (comp ::common-db/visible
+       ::common-db/loader
        ::db/login-menu
        ::db/ui
        ::db/main-menu))

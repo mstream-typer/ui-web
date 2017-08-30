@@ -3,13 +3,16 @@
 
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha17"]
-   [etaoin "0.1.6"]]
+   [etaoin "0.1.6"]
+   [http-kit "2.2.0"]
+   [org.clojure/data.json "0.2.6"]]
 
   
   :plugins
   [[lein-ancient "0.6.10"]
    [lein-bikeshed "0.4.1"]
-   [lein-cucumber "1.0.2"]]
+   [lein-cucumber "1.0.2"]
+   [lein-shell "0.5.0"]]
 
   
   :min-lein-version
@@ -30,6 +33,19 @@
 
 
   :cucumber-glue-paths
-  ["src/clj"])
+  ["src/clj"]
+
+
+  :aliases
+  {"docker-compose" ["do"
+                     ["shell" "docker-compose" "down"]
+                     ["shell" "docker-compose" "up" "-d"]]
+   "ft" ["do"
+         ["docker-compose"]
+         ["cucumber"]]})
+
+
+
+
 
 

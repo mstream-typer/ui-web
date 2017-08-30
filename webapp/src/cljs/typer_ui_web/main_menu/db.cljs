@@ -1,10 +1,7 @@
 (ns typer-ui-web.main-menu.db
   (:require [clojure.spec.alpha :as s]
-            [clojure.test.check.generators :as gen]))
-
-
-(s/def ::visible
-  boolean?)
+            [clojure.test.check.generators :as gen]
+            [typer-ui-web.common.db :as common-db]))
 
 
 (s/def ::password
@@ -20,19 +17,15 @@
                 ::username]))
 
 
-(s/def ::loader
-  (s/keys :req [::visible]))
-
-
 (s/def ::login-menu
-  (s/keys :req [::loader
-                ::visible
+  (s/keys :req [::common-db/loader
+                ::common-db/visible
                 ::username
                 ::password]))
 
 
 (s/def ::user-dropdown
-  (s/keys :req [::visible]))
+  (s/keys :req [::common-db/visible]))
 
 
 (s/def ::data
@@ -51,12 +44,10 @@
 (def default-db
   {::main-menu {::data {::user {::username ""
                                 ::password ""}}
-                ::ui {::user-dropdown {::visible false}
-                      ::login-menu {::loader {::visible false}
-                                    ::visible false
+                ::ui {::user-dropdown {::common-db/visible false}
+                      ::login-menu {::common-db/loader {::common-db/visible false}
+                                    ::common-db/visible false
                                     ::username ""
                                     ::password ""}}}})
-
-
 
                        

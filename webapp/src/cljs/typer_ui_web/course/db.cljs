@@ -1,30 +1,10 @@
 (ns typer-ui-web.course.db
   (:require [clojure.spec.alpha :as s]
-            [clojure.test.check.generators :as gen]))
+            [clojure.test.check.generators :as gen]
+            [typer-ui-web.common.db :as common-db]))
 
 
-(def dummy-exercises [{::id "1"
-                       ::title "f & j"
-                       ::description "description"}
-                      {::id "2"
-                       ::title "d & k"
-                       ::description "description"}
-                      {::id "3"
-                       ::title "s & l"
-                       ::description "description"}
-                      {::id "4"
-                       ::title "a & ;"
-                       ::description "description"}
-                      {::id "5"
-                       ::title "e & i"
-                       ::description "description"}])
-
-
-(s/def ::id
-  string?)
-
-
-(s/def ::title
+(s/def ::name
   string?)
 
 
@@ -33,7 +13,9 @@
 
 
 (s/def ::exercise
-  (s/keys :req [::id ::title ::description]))
+  (s/keys :req [::common-db/id
+                ::name
+                ::description]))
 
 
 (s/def ::exercises
@@ -45,7 +27,7 @@
 
 
 (s/def ::ui
-  map?)
+  (s/keys :req [::common-db/loader]))
 
 
 (s/def ::course
@@ -53,6 +35,8 @@
 
 
 (def default-db
-  {::course {::data {::exercises dummy-exercises}
-             ::ui {}}})
+  {::course {::data {::name ""
+                     ::exercises []}
+             ::ui {::common-db/loader {::common-db/visible true}}}})
+
                        

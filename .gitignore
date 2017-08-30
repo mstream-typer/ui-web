@@ -1,9 +1,8 @@
-/*.log
-/target
-/*-init.clj
+*.log
+**/target
 /resources/public/css/compiled
 /resources/public/js/compiled
-out
+**/out
 .lein-*
 *~
 .\#*

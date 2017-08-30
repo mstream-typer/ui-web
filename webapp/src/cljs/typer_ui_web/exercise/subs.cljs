@@ -1,6 +1,7 @@
 (ns typer-ui-web.exercise.subs
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [typer-ui-web.exercise.db :as db]
+            [typer-ui-web.common.db :as common-db]
             [clojure.spec.alpha :as s] 
             [re-frame.core :as rf]))
 
@@ -211,6 +212,13 @@
                                   ::value next-result}
              :else (recur next-result (vec other-rows)))))))))
 
+
+(rf/reg-sub
+ ::loading?
+ (comp ::common-db/visible
+       ::common-db/loader
+       ::db/ui
+       ::db/execise))
 
 (rf/reg-sub
  ::exercise-text-actual

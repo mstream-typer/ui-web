@@ -4,7 +4,8 @@
             [clojure.test.check.generators :as gen]
             [typer-ui-web.common.events :as common-events]
             [typer-ui-web.db :as core-db]
-            [typer-ui-web.exercise.db :as db]))
+            [typer-ui-web.exercise.db :as db]
+            [typer-ui-web.common.db :as common-db]))
 
 
 (s/def ::character-typed-event
@@ -101,7 +102,7 @@
                                        (::db/exercise)
                                        (::db/ui)
                                        (::db/summary-modal)
-                                       (::db/visible))]
+                                       (::common-db/visible))]
      (if (and in-started?
               (not in-finished?)
               (zero? in-timer))  
@@ -267,7 +268,7 @@
                                        (::db/exercise)
                                        (::db/ui)
                                        (::db/summary-modal)
-                                       (::db/visible))]
+                                       (::common-db/visible))]
      (if (= in-text-expected
             (conj in-text-actual ch))
        (and out-exercise-finished
@@ -462,7 +463,7 @@
           (assoc-in [::db/exercise
                      ::db/ui
                      ::db/summary-modal
-                     ::db/visible]
+                     ::common-db/visible]
                     (= next-text-actual text-expected))))}))
 
 (rf/reg-event-fx
@@ -513,7 +514,7 @@
                (assoc-in [::db/exercise
                           ::db/ui
                           ::db/summary-modal
-                          ::db/visible]
+                          ::common-db/visible]
                          (zero? timer))))}))
 
 (rf/reg-event-fx

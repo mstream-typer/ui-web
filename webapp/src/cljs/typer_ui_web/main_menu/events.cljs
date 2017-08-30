@@ -3,7 +3,7 @@
             [clojure.spec.alpha :as s]
             [typer-ui-web.common.core :refer [evt> <sub]]
             [typer-ui-web.common.events :as common-events]
-            [typer-ui-web.db :as core-db]
+            [typer-ui-web.common.db :as common-db]
             [typer-ui-web.main-menu.db :as db]))
 
 
@@ -34,7 +34,7 @@
 
 
 (s/def ::login-menu-visible
-  (comp ::db/visible
+  (comp ::common-db/visible
         ::db/login-menu
         ::db/ui
         ::db/main-menu
@@ -43,7 +43,7 @@
 
 (s/def ::login-menu-not-visible
   (comp not
-        ::db/visible
+        ::common-db/visible
         ::db/login-menu
         ::db/ui
         ::db/main-menu
@@ -51,8 +51,8 @@
 
 
 (s/def ::login-menu-loader-visible
-  (comp ::db/visible
-        ::db/loader
+  (comp ::common-db/visible
+        ::common-db/loader
         ::db/login-menu
         ::db/ui
         ::db/main-menu
@@ -61,8 +61,8 @@
 
 (s/def ::login-menu-loader-not-visible
   (comp not
-        ::db/visible
-        ::db/loader
+        ::common-db/visible
+        ::common-db/loader
         ::db/login-menu
         ::db/ui
         ::db/main-menu
@@ -131,14 +131,14 @@
                                  (::db/main-menu)
                                  (::db/ui)
                                  (::db/user-dropdown)
-                                 (::db/visible))
+                                 (::common-db/visible))
          out-dropdown-visible (-> %
                                   (:ret)
                                   (:db)
                                   (::db/main-menu) 
                                   (::db/ui)
                                   (::db/user-dropdown)
-                                  (::db/visible))]
+                                  (::common-db/visible))]
      (not= out-dropdown-visible
            in-dropdown-visible)))
 
@@ -189,7 +189,7 @@
            (update-in  [::db/main-menu
                         ::db/ui
                         ::db/user-dropdown
-                        ::db/visible]
+                        ::common-db/visible]
                      not))})
 
 (rf/reg-event-fx
@@ -209,7 +209,7 @@
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/visible]
+                      ::common-db/visible]
                      true))})
 
 (rf/reg-event-fx
@@ -232,13 +232,13 @@
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/visible]
+                      ::common-db/visible]
                      true)
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/loader
-                      ::db/visible]
+                      ::common-db/loader
+                      ::common-db/visible]
                      true))
    ::sign-in {::credentials creds
               ::on-success [::user-sign-in-succeed]
@@ -263,13 +263,13 @@
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/visible]
+                      ::common-db/visible]
                      false)
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/loader
-                      ::db/visible]
+                      ::common-db/loader
+                      ::common-db/visible]
                      false)
            (assoc-in [::db/main-menu
                       ::db/data
@@ -294,13 +294,13 @@
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/visible]
+                      ::common-db/visible]
                      false)
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/loader
-                      ::db/visible]
+                      ::common-db/loader
+                      ::common-db/visible]
                      false))})
 
 (rf/reg-event-fx
@@ -370,7 +370,7 @@
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
-                      ::db/visible]
+                      ::common-db/visible]
                      false))})
 
 (rf/reg-event-fx

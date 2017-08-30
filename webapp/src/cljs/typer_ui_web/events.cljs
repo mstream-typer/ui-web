@@ -2,9 +2,11 @@
   (:require [re-frame.core :as rf]
             [typer-ui-web.common.core :refer [evt> <sub]]
             [typer-ui-web.common.events :as common-events]
+            [typer-ui-web.course.events :as course-events]
             [clojure.spec.alpha :as s]
             [clojure.test.check.generators :as gen]
             [typer-ui-web.db :as db]
+            [typer-ui-web.common.db :as common-db]
             [typer-ui-web.exercise.db :as exercise-db]))
 
 
@@ -19,6 +21,11 @@
 (s/def ::exercise
   (s/keys :req [::text
                 ::time])) 
+
+
+(s/def ::navigated-to-course-event
+  (s/tuple keyword?
+           string?))
 
 
 (s/def ::navigate-to-exercise-requested-event
@@ -47,6 +54,14 @@
   (s/keys :req [::exercise-id
                 ::on-success
                 ::on-failure]))
+
+
+(s/def ::view-changes-to-course
+  #(= ::db/course
+      (-> %
+          (:db)
+          (::db/ui)
+          (::db/view))))
 
 
 (s/def ::view-changes-to-exercise 
@@ -94,16 +109,16 @@
   #(-> %
        (:db)
        (::db/ui)
-       (::db/loader)
-       (::db/visible)))
+       (::common-db/loader)
+       (::common-db/visible)))
 
 
 (s/def ::loader-hides
   #(-> %
        (:db)
        (::db/ui)
-       (::db/loader)
-       (::db/visible)
+       (::common-db/loader)
+       (::common-db/visible)
        (not)))
 
 
@@ -119,6 +134,26 @@
 (rf/reg-event-fx
  ::db-initialized
  db-initialized)
+
+
+(s/fdef 
+ navigated-to-course
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::navigated-to-course-event)
+ :ret (s/and ::common-events/effects
+             ::view-changes-to-course))
+(defn navigated-to-course [{:keys [db]}
+                           [_ course-id]]
+  {:db (-> db
+           (assoc-in [::db/ui
+                      ::db/view]
+                     ::db/course))
+   :dispatch [::course-events/course-loading-requested course-id]})
+
+
+(rf/reg-event-fx
+ ::navigated-to-course
+ navigated-to-course)
 
 
 (s/fdef 
@@ -155,11 +190,11 @@
                                       [_ exercise-id]]
   {:db (-> db
            (assoc-in [::db/ui
-                      ::db/loader
-                      ::db/visible]
+                      ::common-db/loader
+                      ::common-db/visible]
                      true))
    ::load-exercise {::exercise-id exercise-id 
-                    ::on-success [::navigate-to-exercise-succeed]
+                    ::on-success [::navigate-to-exercise-succee]
                     ::on-failure [::navigate-to-exercise-failed]}})
 
 (rf/reg-event-fx
@@ -179,8 +214,8 @@
                                     [_ exercise]]
   {:db (-> db
            (assoc-in [::db/ui
-                      ::db/loader
-                      ::db/visible]
+                      ::common-db/loader
+                      ::common-db/visible]
                      false)
            (assoc-in [::db/ui
                       ::db/view]
@@ -214,8 +249,8 @@
                                    [_ error]]
   {:db (-> db
            (assoc-in [::db/ui
-                      ::db/loader
-                      ::db/visible]
+                      ::common-db/loader
+                      ::common-db/visible]
                      false))})
 
 (rf/reg-event-fx

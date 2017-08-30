@@ -4,6 +4,10 @@
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha17"]
    [org.clojure/clojurescript "1.9.908"]
+   [cljs-ajax "0.7.1"]
+   [com.cemerick/url "0.1.1"]
+   [day8.re-frame/http-fx "0.1.4"]
+   [funcool/cuerdas "2.0.3"]
    [reagent "0.7.0"]
    [re-frame "0.10.1"]
    [re-frisk "0.4.5"]
@@ -90,6 +94,8 @@
 
   :aliases
   {"build" ["do"
+            ["deps"]
+            ;["doo" "phantom" "test" "once"]
             ["cljsbuild" "once"]
             ["garden" "once"]
             ["docker" "build"]]})

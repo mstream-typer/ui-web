@@ -5,22 +5,14 @@
             [clojure.spec.alpha :as s]))
 
 
-(s/def ::visible
-  boolean?)
-
-
-(s/def ::loader
-  (s/keys :req [::visible]))
-
-
 (s/def ::view
   #{::home
+    ::course
     ::exercise})
 
 
 (s/def ::ui
-  (s/keys :req [::loader
-                ::view]))
+  (s/keys :req [::view]))
 
 
 (s/def ::db
@@ -34,5 +26,4 @@
   (merge course-db/default-db
          exercise-db/default-db
          main-menu-db/default-db
-         {::ui {::loader {::visible false}
-                ::view ::home}}))
+         {::ui {::view ::home}}))
