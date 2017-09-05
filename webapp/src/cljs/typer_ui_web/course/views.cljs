@@ -16,6 +16,7 @@
                      desc
                      navigate-to-exercise-request-event]
   [:div.exercise-item.card
+   {:id (str "exercise-" id)}
    [:div.content
     [:div.header name]
     [:div.description desc]]
@@ -44,7 +45,7 @@
 
 (defn course-view [navigate-to-exercise-request-event]
   [course-panel
-   [navigate-to-exercise-request-event]])
+   navigate-to-exercise-request-event])
 
 
 

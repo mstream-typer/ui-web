@@ -37,6 +37,6 @@
 (def default-db
   {::course {::data {::name ""
                      ::exercises []}
-             ::ui {::common-db/loader {::common-db/visible true}}}})
+             ::ui {::common-db/loader {::common-db/visible false}}}})
 
                        

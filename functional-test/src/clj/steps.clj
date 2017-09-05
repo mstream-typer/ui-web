@@ -26,6 +26,10 @@
   "^\\{course\\(id:\\w+\\)\\{name exercises\\{id name description\\}\\}\\}$")
 
 
+(def exercise-api-request-body-pattern
+  "^\\{exercise\\(id:\\w+\\)\\{time text\\}\\}$")
+
+
 (def wiremock-api "http://localhost:8080/__admin")
 
 
@@ -62,7 +66,7 @@
 
 
 (Given
- #"^typer service responds with course exercises$"
+ #"^typer service responds with following course exercises$"
  [exercises]
  (stub {:method "GET"
         :urlPath "/api"
@@ -71,6 +75,17 @@
         :jsonBody {:data {:course {:name "course0"
                                    :exercises (table->rows exercises)}}}}))
 
+
+(Given
+ #"^typer service responds with following exercise '(\w+)' details$"
+ [exercise-id exercise-data]
+ (let [{:keys [time text]} (first (table->rows exercise-data))] 
+   (stub {:method "GET"
+          :urlPath "/api"
+          :queryParameters {:query {:matches exercise-api-request-body-pattern}}}
+         {:status 200
+          :jsonBody {:data {:exercise {:time time
+                                       :text text}}}})))
        
 (When
  #"^user enters the home page$"
@@ -90,8 +105,26 @@
    postmortem-opts
    (doto driver
      (wait-invisible "#dimmer .loader")
-      (wait-visible "#main-panel .course.button")
-      (eta/click "#main-panel .course.button"))))
+     (wait-visible "#main-panel .course.button")
+     (eta/click "#main-panel .course.button"))))
+
+
+(When
+ #"^user navigates to the exercise called '(\w+)'$"
+ [exercise-name]
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+     (wait-visible "#course-panel"))
+   (->> (eta/query-all driver ".exercise-item")
+        (filter #(str/includes? (eta/get-element-text-el driver
+                                                         %)
+                                exercise-name))
+        (first)
+        (#(eta/get-element-attr-el driver % :id))
+        (#(eta/click driver (str "#" % " .button"))))))
 
 
 (Then
@@ -104,9 +137,8 @@
      (wait-invisible "#dimmer .loader")
      (wait-visible "#course-panel"))
    (let [expected-exercises (set (table->rows exercises-data))
-         exercises-css ".exercise-item"
          exercise-texts (->> (eta/query-all driver
-                                            exercises-css)
+                                            ".exercise-item")
                              (map (partial eta/get-element-text-el
                                            driver)))]
      (test/is (= (count expected-exercises)
@@ -124,3 +156,33 @@
                       expected-exercises)))))
 
 
+(Then
+ #"^user should see a timer displaying '(.+)'$"
+ [timer-value]
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+     (wait-visible "#exercise"))
+   (let [timer-text (eta/get-element-text driver "#timer")]
+     (test/is (str/includes? timer-text
+                             timer-value)))))
+
+
+(Then
+ #"^user should see following text hints$"
+ [lines-data]
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+     (wait-visible "#exercise"))
+   (let [expected-lines (->> (table->rows lines-data)
+                             (map #(get % :line "")))
+         actual-lines (->> (eta/query-all driver
+                                          "#exercise .line")
+                           (map (partial eta/get-element-text-el driver)))]
+     (test/is (= actual-lines
+                 expected-lines)))))

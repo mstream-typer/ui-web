@@ -4,24 +4,15 @@
             [typer-ui-web.common.db :as common-db]))
 
 
-(def dummy-text
-  (vec (concat "aaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaa"
-               [\newline]
-               "bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb bbb"
-               [\newline]
-               "cccccccccc ccccccccccc ccccccccccc ccccccccccc"
-               [\newline]
-               "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa")))
- 
-
 (def characters
-  #{\a \b \c \d \e \f \g \h \i \j \k \l \m
+  #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+    \a \b \c \d \e \f \g \h \i \j \k \l \m
     \n \o \p \q \r \s \t \u \v \w \x \y \z
     \A \B \C \D \E \F \G \H \I \J \K \L \M
     \N \O \P \Q \R \S \T \U \V \W \X \Y \Z
     \! \@ \# \$ \% \^ \& \* \( \) \- \_ \=
     \+ \[ \{ \] \} \; \: \" \' \\ \| \, \<
-    \. \> \/ \? \` \~})
+    \. \> \/ \? \` \~}) 
 
 
 (def whitespaces
@@ -80,7 +71,7 @@
 
 
 (s/def ::exercise-timer-initial
-  (s/and int? pos?))
+  (s/and int? (complement neg?)))
 
 
 (s/def ::current
@@ -131,7 +122,7 @@
   
 
 (s/def ::ui
-  (s/keys :req [::sheet]))
+  (s/keys :req [::common-db/loader ::sheet ::summary-modal]))
 
 
 (s/def ::exercise
@@ -141,10 +132,11 @@
 (def default-db
   {::exercise {::data {::started false
                        ::finished false
-                       ::timer {::current 100
-                                ::initial 100}
-                       ::text {::expected dummy-text
+                       ::timer {::current 0
+                                ::initial 0}
+                       ::text {::expected []
                                ::actual []}}
-               ::ui {::sheet {::height 5
+               ::ui {::common-db/loader {::common-db/visible false}
+                     ::sheet {::height 5
                               ::width 25}
                      ::summary-modal {::common-db/visible false}}}})

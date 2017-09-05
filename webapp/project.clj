@@ -4,13 +4,13 @@
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha17"]
    [org.clojure/clojurescript "1.9.908"]
-   [cljs-ajax "0.7.1"]
+   [cljs-ajax "0.7.2"]
    [com.cemerick/url "0.1.1"]
    [day8.re-frame/http-fx "0.1.4"]
    [funcool/cuerdas "2.0.3"]
    [reagent "0.7.0"]
    [re-frame "0.10.1"]
-   [re-frisk "0.4.5"]
+   [re-frisk "0.5.0"]
    [garden "1.3.2"]
    [ns-tracker "0.3.1"]]
 

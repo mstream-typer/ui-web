@@ -201,6 +201,12 @@
                 (:args)
                 (:exercise-finished)
                 (not))
+            (not= (-> %
+                      :args
+                      :timer-initial)
+                  (-> %
+                      :args
+                      :timer-current))
             (<= (-> %
                     (:args)
                     (:timer-initial)
@@ -310,7 +316,7 @@
                             \newline \u21b5}
         sheet-middle (quot (dec sheet-height) 2)]
     [:div#exercise.ui.raised.container.segment
-     [:div.ui.massive.blue.right.ribbon.label
+     [:div#timer.ui.massive.blue.right.ribbon.label
       [:i {:class (hourglass-class timer-current
                                    timer-initial
                                    exercise-started?

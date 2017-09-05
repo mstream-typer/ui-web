@@ -2,15 +2,83 @@
   (:require [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
             [clojure.test.check.generators :as gen]
+            [ajax.core :as ajax]
+            [cemerick.url :as url]
+            [cuerdas.core :as str]
+            [day8.re-frame.http-fx]
             [typer-ui-web.common.events :as common-events]
             [typer-ui-web.db :as core-db]
             [typer-ui-web.exercise.db :as db]
             [typer-ui-web.common.db :as common-db]))
 
 
+(def exercise-query-fmt
+  "{exercise(id:%s){time text}}")
+
+
+(s/def ::time
+  int?)
+
+
+(s/def ::text
+  string?)
+
+
+(s/def ::exercise
+  (s/keys :req-un [::time ::text]))
+
+
+(s/def ::data
+  (s/keys :req-un [::exercise]))
+
+
+(s/def ::exercise-response
+  (s/keys :req-un [::data]))
+
+
+(s/def ::exercise-loading-succeed-event
+  (s/tuple keyword?
+           ::exercise-response))
+
+
+(s/def ::exercise-loading-requested-event
+  (s/tuple keyword?
+           string?))
+
+
 (s/def ::character-typed-event
   (s/tuple #{::character-typed}
            (s/with-gen char? (fn [] gen/char-ascii))))
+
+
+(s/def ::loader-shows-up
+  (comp ::common-db/visible
+        ::common-db/loader
+        ::db/ui
+        ::db/exercise
+        :db))
+
+
+(s/def ::loader-hides
+  (comp not
+        ::common-db/visible
+        ::common-db/loader
+        ::db/ui
+        ::db/exercise
+        :db))
+
+
+(s/def ::loader-hides-when-not-dispatching
+  #(let [loader-visible? (-> %
+                             :db
+                             ::db/exercise
+                             ::db/ui
+                             ::common-db/loader
+                             ::common-db/visible)
+         dispatching? (:dispatch %)]
+     (if (not dispatching?)
+       (not loader-visible?)
+       true)))
 
 
 (s/def ::starts-exercise
@@ -410,6 +478,135 @@
        true)))
 
 
+(s/def ::exercise-loading-fails-on-invalid-time
+  #(let [in-db (-> %
+                   :args
+                   :cofx
+                   :db)
+         in-response-time (-> %
+                              :args
+                              :event
+                              second
+                              :data
+                              :exercise
+                              :time)
+         in-response-text (-> %
+                              :args
+                              :event
+                              second
+                              :data
+                              :exercise
+                              :text)
+         out-db (-> %
+                    :ret
+                    :db)
+         out-dispatch (-> %
+                          :ret
+                          :db)]
+     (if (and (not (s/valid? ::db/exercise-timer-initial
+                             in-response-time))
+              (s/valid? ::db/exercise-text
+                        in-response-text))
+       (and (= out-db
+               in-db)
+            (= (first out-dispatch)
+               ::exercise-loading-failed)
+            (str/includes? (second out-dispatch)
+                           "invalid exercise time"))
+       true)))
+
+
+(s/def ::exercise-loading-fails-on-invalid-text
+  #(let [in-db (-> %
+                   :args
+                   :cofx
+                   :db)
+         in-response-time (-> %
+                              :args
+                              :event
+                              second
+                              :data
+                              :exercise
+                              :time)
+         in-response-text (-> %
+                              :args
+                              :event
+                              second
+                              :data
+                              :exercise
+                              :text)
+         out-db (-> %
+                    :ret
+                    :db)
+         out-dispatch (-> %
+                          :ret
+                          :db)]
+     (if (and (not (s/valid? ::db/exercise-text
+                             in-response-text))
+              (s/valid? ::db/exercise-timer-initial
+                        in-response-time))
+       (s/and (= out-db
+                 in-db)
+              (= (first out-dispatch)
+                 ::exercise-loading-failed)
+              (str/includes? (second out-dispatch)
+                             "invalid exercise-text"))
+       true)))
+
+
+(s/def ::exercise-state-loads
+  #(let [in-time (-> %
+                     :args
+                     :event
+                     second
+                     :data
+                     :exercise
+                     :time)
+         in-text (-> %
+                     :args
+                     :event
+                     second
+                     :data
+                     :exercise
+                     :text)
+         out-time-current (-> %
+                              :ret
+                              :db
+                              ::db/exercise
+                              ::db/data
+                              ::db/timer
+                              ::db/current)
+         out-time-initial (-> %
+                              :ret
+                              :db
+                              ::db/exercise
+                              ::db/data
+                              ::db/timer
+                              ::db/initial)         
+         out-text-expected (-> %
+                               :ret
+                               :db
+                               ::db/exercise
+                               ::db/data
+                               ::db/text
+                               ::db/expected)
+         out-text-actual (-> %
+                             :ret
+                             :db
+                             ::db/exercise
+                             ::db/data
+                             ::db/text
+                             ::db/actual)]
+     (if (and (s/valid? ::db/exercise-timer-initial
+                        in-time)
+              (s/valid? ::db/exercise-text
+                        in-text))
+       (s/and (= out-time-initial out-time-current in-time)
+              (= out-text-expected in-text)
+              (empty? out-text-actual))
+       true)))
+
+
 (s/fdef 
  character-typed
  :args (s/cat :cofx ::common-events/coeffects
@@ -571,5 +768,107 @@
 (rf/reg-event-fx
  ::exercise-restarted
  exercise-restarted)
+
+
+(s/fdef 
+ exercise-loading-requested
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::exercise-loading-requested-event)
+ :ret (s/and ::common-events/effects
+             ::loader-shows-up))
+(defn exercise-loading-requested [{:keys [db]}
+                                  [_ exercise-id]]
+  {:db (-> db
+           (assoc-in [::db/exercise
+                      ::db/ui
+                      ::common-db/loader
+                      ::common-db/visible]
+                     true))
+           :http-xhrio {:method :get
+                        :uri "http://localhost:8080/api"
+                        :params {:query (str/format exercise-query-fmt
+                                                    exercise-id)}
+                        :timeout 5000
+                        :response-format (ajax/json-response-format {:keywords? true})
+                        :on-success [::exercise-loading-succeed]
+                        :on-failure [::exercise-loading-failed]}})
+
+
+(rf/reg-event-fx
+ ::exercise-loading-requested
+ exercise-loading-requested)
+
+
+(s/fdef 
+ exercise-loading-succeed
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::exercise-loading-succeed-event)
+ :ret (s/and ::common-events/effects
+             ::loader-hides-when-not-dispatching)
+ :fn (s/and ::exercise-state-loads
+            ::exercise-loading-fails-on-invalid-time
+            ::exercise-loading-fails-on-invalid-text))
+(defn exercise-loading-succeed [{:keys [db]}
+                                [_ {{:keys [exercise]} :data}]]
+  (let [exercise-time (:time exercise)
+        exercise-text (-> exercise
+                          :text
+                          vec)]
+    (cond (not (s/valid? ::db/exercise-timer-initial
+                         exercise-time))
+          {:db db
+           :dispatch [::exercise-loading-failed (str "invalid exercise time: "
+                                                     (s/explain-data ::db/exercise-timer-initial
+                                                                     exercise-time))]}
+          
+          (not (s/valid? ::db/exercise-text
+                         exercise-text))
+          {:db db
+           :dispatch [::exercise-loading-failed (str "invalid exercise text: "
+                                                     (s/explain-data ::db/exercise-text
+                                                                     exercise-text))]}
+
+          :else
+          {:db (-> db
+                   (assoc-in [::db/exercise
+                              ::db/ui
+                              ::common-db/loader
+                              ::common-db/visible]
+                             false)
+                   (assoc-in [::db/exercise
+                              ::db/data]
+                             (merge (-> db/default-db
+                                        ::db/exercise
+                                        ::db/data)
+                                    {::db/timer {::db/current exercise-time
+                                                 ::db/initial exercise-time}
+                                     ::db/text {::db/actual []
+                                                ::db/expected (-> exercise
+                                                                  :text
+                                                                  vec)}})))})))
+
+(rf/reg-event-fx
+ ::exercise-loading-succeed
+ exercise-loading-succeed)
+
+
+(s/fdef 
+ exercise-loading-failed
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::common-events/failure-event)
+ :ret (s/and ::common-events/effects
+             ::loader-hides))
+(defn exercise-loading-failed [{:keys [db]}
+                               [_ error]]
+  {:db (-> db
+           (assoc-in [::db/exercise
+                      ::db/ui
+                      ::common-db/loader
+                      ::common-db/visible]
+                     false))})
+
+(rf/reg-event-fx
+ ::exercise-loading-failed
+ exercise-loading-failed)
 
 

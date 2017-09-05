@@ -38,9 +38,9 @@
     (case view
       ::db/home [home-view]
       ::db/course [course-views/course-view
-                   [::events/navigate-to-exercise-requested]]
+                   [::events/navigated-to-exercise]]
       ::db/exercise [exercise-views/exercise-view
-                     [::events/navigate-to-home-requested]])))
+                     [::events/navigated-to-home]])))
 
  
 (defn main-panel []

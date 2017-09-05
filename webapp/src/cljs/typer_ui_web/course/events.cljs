@@ -151,8 +151,7 @@
                 :params {:query (str/format course-query-fmt
                                             course-id)}
                 :timeout 5000
-                ; bug :keywords? <-> :raw
-                :response-format (ajax/json-response-format {:keywords? false :raw true})
+                :response-format (ajax/json-response-format {:keywords? true})
                 :on-success [::course-loading-succeed]
                 :on-failure [::course-loading-failed]}})
 
@@ -202,7 +201,6 @@
              ::loader-hides))
 (defn course-loading-failed [{:keys [db]}
                              [_ error]]
-  (println error)
   {:db (-> db
            (assoc-in [::db/course
                       ::db/ui
