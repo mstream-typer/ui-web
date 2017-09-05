@@ -22,7 +22,3 @@
 (s/def ::failure-event
   (s/tuple keyword?
            string?))
-
-
-;(s/def ::view-changed)
-

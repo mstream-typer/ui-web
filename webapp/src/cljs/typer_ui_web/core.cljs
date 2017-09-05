@@ -24,5 +24,3 @@
   (rf/dispatch-sync [::events/db-initialized])
   (dev-setup)
   (mount-root))
-
-

@@ -6,7 +6,7 @@
             [re-frame.core :as rf]))
 
 
-(defn login-menu [] 
+(defn login-menu []
   (let [visible (<sub [::subs/login-menu-visible])
         username (<sub [::subs/login-menu-username])
         password (<sub [::subs/login-menu-password])
@@ -23,7 +23,7 @@
         [:input#username
          {:name "username"
           :type "text"
-          :value username 
+          :value username
           :on-change #(evt> [::events/login-menu-username-changed
                              (-> %
                                  .-target
@@ -34,7 +34,7 @@
          {:name "password"
           :type "password"
           :value password
-          :on-change #(evt> [::events/login-menu-password-changed 
+          :on-change #(evt> [::events/login-menu-password-changed
                              (-> %
                                  .-target
                                  .-value)])}]]
@@ -47,11 +47,12 @@
         [:div.ui.positive.right.labeled.icon.button
          {:class (when loading?
                    "loading")
-          ;TODO: get rid of dependencies on the db namespace 
-          :on-click #(evt> [::events/user-sign-in-requested {::db/username username
-                                                             ::db/password password}])}
+          ;TODO: get rid of dependencies on the db namespace
+          :on-click #(evt> [::events/user-sign-in-requested
+                            {::db/username username
+                             ::db/password password}])}
          "Sign In"
-         [:i.sign.in.icon]]]]]])) 
+         [:i.sign.in.icon]]]]]]))
 
 
 (defn sign-in-menu-item []

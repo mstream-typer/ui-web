@@ -4,7 +4,7 @@
             [typer-ui-web.course.subs :as course-subs]
             [typer-ui-web.exercise.subs :as exercise-subs]
             [typer-ui-web.main-menu.subs :as main-menu-subs]
-            [clojure.spec.alpha :as s] 
+            [clojure.spec.alpha :as s]
             [re-frame.core :as rf]))
 
 
@@ -33,6 +33,3 @@
  :<- [::course-subs/loading?]
  :<- [::exercise-subs/loading?]
  loading?)
-
-
- 

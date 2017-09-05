@@ -32,7 +32,7 @@
 
 
 (s/def ::exercises
-  (s/coll-of ::exercise :kind vector?)) 
+  (s/coll-of ::exercise :kind vector?))
 
 
 (s/def ::course
@@ -131,7 +131,7 @@
         expected-request)))
 
 
-(s/fdef 
+(s/fdef
  course-loading-requested
  :args (s/cat :cofx ::common-events/coeffects
               :event ::course-loading-requested-event)
@@ -160,7 +160,7 @@
  course-loading-requested)
 
 
-(s/fdef 
+(s/fdef
  course-loading-succeed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::course-loading-succeed-event)
@@ -193,7 +193,7 @@
  course-loading-succeed)
 
 
-(s/fdef 
+(s/fdef
  course-loading-failed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/failure-event)
@@ -211,4 +211,3 @@
 (rf/reg-event-fx
  ::course-loading-failed
  course-loading-failed)
-

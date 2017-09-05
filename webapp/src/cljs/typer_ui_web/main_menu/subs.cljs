@@ -2,7 +2,7 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [typer-ui-web.main-menu.db :as db]
             [typer-ui-web.common.db :as common-db]
-            [clojure.spec.alpha :as s] 
+            [clojure.spec.alpha :as s]
             [re-frame.core :as rf]))
 
 

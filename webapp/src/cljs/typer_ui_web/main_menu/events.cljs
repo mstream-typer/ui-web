@@ -93,7 +93,7 @@
                                      ::db/password)]
      (= out-login-menu-password
         in-password)))
-     
+
 
 (s/def ::sets-credentials-from-event
   #(let [event-creds (-> %
@@ -135,7 +135,7 @@
          out-dropdown-visible (-> %
                                   (:ret)
                                   (:db)
-                                  (::db/main-menu) 
+                                  (::db/main-menu)
                                   (::db/ui)
                                   (::db/user-dropdown)
                                   (::common-db/visible))]
@@ -155,7 +155,7 @@
           (::db/user))))
 
 
-(s/fdef 
+(s/fdef
  user-signed-out
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/parameterless-event)
@@ -177,14 +177,14 @@
  user-signed-out)
 
 
-(s/fdef 
+(s/fdef
  user-dropdown-switched
- :args (s/cat :cofx ::common-events/coeffects  
+ :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/parameterless-event)
  :ret ::common-events/effects
  :fn ::user-dropdown-switched)
 (defn user-dropdown-switched [{:keys [db]}
-                              _] 
+                              _]
   {:db (-> db
            (update-in  [::db/main-menu
                         ::db/ui
@@ -197,14 +197,14 @@
  user-dropdown-switched)
 
 
-(s/fdef 
+(s/fdef
  login-menu-button-pressed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/parameterless-event)
  :ret (s/and ::common-events/effects
              ::login-menu-visible))
 (defn login-menu-button-pressed [{:keys [db]}
-                                 [_ character]] 
+                                 [_ character]]
   {:db (-> db
            (assoc-in [::db/main-menu
                       ::db/ui
@@ -217,9 +217,9 @@
  login-menu-button-pressed)
 
 
-(s/fdef 
+(s/fdef
  user-sign-in-requested
- :args (s/cat :cofx ::common-events/coeffects  
+ :args (s/cat :cofx ::common-events/coeffects
               :event ::user-sign-in-requested-event)
  :ret (s/and ::common-events/effects
              ::login-menu-visible
@@ -249,7 +249,7 @@
  user-sign-in-requested)
 
 
-(s/fdef 
+(s/fdef
  user-sign-in-succeed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::user-sign-in-succeed-event)
@@ -259,7 +259,7 @@
  :fn ::sets-credentials-from-event)
 (defn user-sign-in-succeed [{:keys [db]}
                             [_ credentials]]
-  {:db (-> db 
+  {:db (-> db
            (assoc-in [::db/main-menu
                       ::db/ui
                       ::db/login-menu
@@ -281,7 +281,7 @@
  user-sign-in-succeed)
 
 
-(s/fdef 
+(s/fdef
  user-sign-in-failed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/failure-event)
@@ -289,7 +289,7 @@
              ::login-menu-not-visible
              ::login-menu-loader-not-visible))
 (defn user-sign-in-failed [{:keys [db]}
-                           _] 
+                           _]
   {:db (-> db
            (assoc-in [::db/main-menu
                       ::db/ui
@@ -338,7 +338,7 @@
  login-menu-username-changed)
 
 
-(s/fdef 
+(s/fdef
  login-menu-password-changed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::input-change-event)
@@ -358,14 +358,14 @@
  login-menu-password-changed)
 
 
-(s/fdef 
+(s/fdef
  cancel-login-menu-button-pressed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/parameterless-event)
  :ret (s/and ::common-events/effects
              ::login-menu-not-visible))
 (defn cancel-login-menu-button-pressed [{:keys [db]}
-                                        _] 
+                                        _]
   {:db (-> db
            (assoc-in [::db/main-menu
                       ::db/ui

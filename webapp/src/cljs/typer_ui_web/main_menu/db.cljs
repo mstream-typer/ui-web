@@ -42,12 +42,11 @@
 
 
 (def default-db
-  {::main-menu {::data {::user {::username ""
-                                ::password ""}}
-                ::ui {::user-dropdown {::common-db/visible false}
-                      ::login-menu {::common-db/loader {::common-db/visible false}
-                                    ::common-db/visible false
-                                    ::username ""
-                                    ::password ""}}}})
-
-                       
+  {::main-menu
+   {::data {::user {::username ""
+                    ::password ""}}
+    ::ui {::user-dropdown {::common-db/visible false}
+          ::login-menu {::common-db/loader {::common-db/visible false}
+                        ::common-db/visible false
+                        ::username ""
+                        ::password ""}}}})

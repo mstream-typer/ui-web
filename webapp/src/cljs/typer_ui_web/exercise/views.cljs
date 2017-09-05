@@ -12,22 +12,22 @@
 (s/def ::no-class-for-letters-beyond-expected
   #(let [char-idx (-> % :args :character-index)
          text-expected (-> % :args :text-expected)
-         result (% :ret)] 
+         result (% :ret)]
      ((if (>= char-idx
               (count text-expected))
         identity
-        not) (empty? result)))) 
+        not) (empty? result))))
 
 
 (s/def ::whitespace-or-character-exclusively
-  #(let [char-idx (-> % :args :character-index) 
+  #(let [char-idx (-> % :args :character-index)
          whitespace? (s/valid? ::exercise-db/whitespace
                                (-> %
                                    :args
                                    :text-expected
                                    (get char-idx)))
          result (% :ret)]
-     (and (re-find (if whitespace? 
+     (and (re-find (if whitespace?
                      #"(?: |^)whitespace-\w+"
                      #"(?: |^)character-\w+")
                    result)
@@ -38,12 +38,12 @@
 
 
 (s/def ::typed-or-untyped-exclusively
-  #(let [char-idx (-> % :args :character-index) 
+  #(let [char-idx (-> % :args :character-index)
          typed? (-> %
                     :args
                     :text-actual
                     (get char-idx)
-                    some?) 
+                    some?)
          result (% :ret)]
      (and (re-find (if typed?
                      #"\w+-typed(?: |$)"
@@ -52,11 +52,11 @@
           (not (re-find (if typed?
                           #"\w+-untyped(?: |$)"
                           #"\w+-typed(?: |$)")
-                        result))))) 
+                        result)))))
 
 
 (s/def ::right-positioned-cursor
-  #(let [char-idx (-> % :args :character-index) 
+  #(let [char-idx (-> % :args :character-index)
          typed-chars-count (-> %
                                :args
                                :text-actual
@@ -89,11 +89,11 @@
                                           (take char-idx))
          result (% :ret)]
      ((if (and (some? actual-char)
-               (not= actual-char 
+               (not= actual-char
                      expected-char)
                (= actual-text-before-cursor
                   expected-text-before-cursor))
-        identity 
+        identity
         not) (re-find #"(?: |^)incorrect(?: |$)"
                       result))))
 
@@ -143,7 +143,7 @@
  :ret string?
  :fn (s/and ::no-class-for-letters-beyond-expected
             ::whitespace-or-character-exclusively
-            ::typed-or-untyped-exclusively 
+            ::typed-or-untyped-exclusively
             ::right-positioned-cursor
             ::marks-mistakes
             ::marks-characters-after-first-mistake))
@@ -154,8 +154,8 @@
            ch-expected (get text-expected character-index)
            text-before-cursor-matches? (= (take character-index text-actual)
                                           (take character-index text-expected))]
-       (if (>= character-index (count text-expected)) 
-         "" 
+       (if (>= character-index (count text-expected))
+         ""
          (str/join \space
                    [(str (if (s/valid? ::exercise-db/whitespace
                                        ch-expected)
@@ -167,11 +167,14 @@
                            "untyped"))
                     (when (and (some? ch-actual)
                                (not= ch-actual ch-expected)
-                               text-before-cursor-matches?) "incorrect")
-                    (when (and (some? ch-actual) 
-                               (not text-before-cursor-matches?)) "after-incorrect")
+                               text-before-cursor-matches?)
+                      "incorrect")
+                    (when (and (some? ch-actual)
+                               (not text-before-cursor-matches?))
+                      "after-incorrect")
                     (when (= character-index
-                             (count text-actual)) "cursor")]))))))
+                             (count text-actual))
+                      "cursor")]))))))
 
 
 (s/def ::hourglass-empty-when-exercise-not-started
@@ -312,7 +315,7 @@
         timer-current (<sub [::subs/exercise-timer-current])
         timer-current-formatted (<sub [::subs/exercise-timer-current-formatted])
         timer-initial (<sub [::subs/exercise-timer-initial])
-        whitespace-symbols {\space \u23b5 
+        whitespace-symbols {\space \u23b5
                             \newline \u21b5}
         sheet-middle (quot (dec sheet-height) 2)]
     [:div#exercise.ui.raised.container.segment
@@ -320,7 +323,7 @@
       [:i {:class (hourglass-class timer-current
                                    timer-initial
                                    exercise-started?
-                                   exercise-finished?)}] 
+                                   exercise-finished?)}]
       timer-current-formatted]
      [:div.ui.top.attached.progress.success
       [:div.bar {:style {:width progress}}]]
@@ -355,7 +358,7 @@
      "Back"]]
    [:div.item
     [:div.ui.button
-     {:on-click #(evt> [::events/exercise-restarted])} 
+     {:on-click #(evt> [::events/exercise-restarted])}
      "Restart"]]])
 
 
@@ -374,11 +377,11 @@
        "Main menu"
        [:i.home.icon]]
       [:div.ui.right.labeled.icon.button
-       {:on-click #(evt> [::events/exercise-restarted])} 
+       {:on-click #(evt> [::events/exercise-restarted])}
        "Repeat"
        [:i.repeat.icon]]
       [:div.ui.positive.right.labeled.icon.button
-       {:on-click #(evt> [::events/exercise-restarted])} 
+       {:on-click #(evt> [::events/exercise-restarted])}
        "Next exercise"
        [:i.arrow.circle.right.icon]]]]))
 
@@ -420,11 +423,9 @@
   (evt> [::events/timer-ticked]))
 
 
-(defonce register-keypress-listener 
+(defonce register-keypress-listener
   (.addEventListener js/window "keydown" key-press-listener))
 
 
 (defonce register-timer
   (js/setInterval dispatch-timer-ticked-event 1000))
-
- 

@@ -28,7 +28,8 @@
 
 
   :source-paths
-  ["src/clj"]
+  ["src/clj"
+   "src/cljs"]
 
 
   :clean-targets
@@ -94,6 +95,7 @@
 
   :aliases
   {"build" ["do"
+            ["bikeshed"]
             ["deps"]
             ;["doo" "phantom" "test" "once"]
             ["cljsbuild" "once"]

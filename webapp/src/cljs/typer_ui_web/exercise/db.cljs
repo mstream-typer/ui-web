@@ -12,7 +12,7 @@
     \N \O \P \Q \R \S \T \U \V \W \X \Y \Z
     \! \@ \# \$ \% \^ \& \* \( \) \- \_ \=
     \+ \[ \{ \] \} \; \: \" \' \\ \| \, \<
-    \. \> \/ \? \` \~}) 
+    \. \> \/ \? \` \~})
 
 
 (def whitespaces
@@ -34,7 +34,7 @@
 (s/def ::exercise-text
   (let [spec (s/and (s/coll-of ::exercise-character :kind vector?)
          ::singly-whitespaced)]
-    (s/with-gen spec #(gen/resize 10 (s/gen spec)))))  
+    (s/with-gen spec #(gen/resize 10 (s/gen spec)))))
 
 
 (s/def ::actual-text
@@ -119,7 +119,7 @@
 
 (s/def ::summary-modal
   (s/keys :req [::common-db/visible]))
-  
+
 
 (s/def ::ui
   (s/keys :req [::common-db/loader ::sheet ::summary-modal]))

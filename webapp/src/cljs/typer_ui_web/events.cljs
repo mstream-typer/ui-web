@@ -21,7 +21,7 @@
 
 (s/def ::exercise
   (s/keys :req [::text
-                ::time])) 
+                ::time]))
 
 
 (s/def ::navigated-to-course-event
@@ -39,7 +39,7 @@
            ::exercise))
 
 
-(s/def ::exercise-id 
+(s/def ::exercise-id
   string?)
 
 
@@ -48,7 +48,7 @@
 
 
 (s/def ::on-failure
-  (s/tuple keyword?)) 
+  (s/tuple keyword?))
 
 
 (s/def ::load-exercise
@@ -65,7 +65,7 @@
           (::db/view))))
 
 
-(s/def ::view-changes-to-exercise 
+(s/def ::view-changes-to-exercise
   #(= ::db/exercise
       (-> %
           (:db)
@@ -73,7 +73,7 @@
           (::db/view))))
 
 
-(s/def ::exercise-state-resets 
+(s/def ::exercise-state-resets
   #(= (::exercise-db/exercise exercise-db/default-db)
       (-> %
           (:db)
@@ -166,7 +166,7 @@
 
 
 
-(s/fdef 
+(s/fdef
  navigated-to-home
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/parameterless-event)
@@ -189,7 +189,7 @@
  navigated-to-home)
 
 
-(s/fdef 
+(s/fdef
  navigated-to-course
  :args (s/cat :cofx ::common-events/coeffects
               :event ::navigated-to-course-event)
@@ -210,7 +210,7 @@
  navigated-to-course)
 
 
-(s/fdef 
+(s/fdef
  navigated-to-exercise
  :args (s/cat :cofx ::common-events/coeffects
               :event ::navigate-to-exercise-requested-event)

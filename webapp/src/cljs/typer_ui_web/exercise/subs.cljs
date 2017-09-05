@@ -2,7 +2,7 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [typer-ui-web.exercise.db :as db]
             [typer-ui-web.common.db :as common-db]
-            [clojure.spec.alpha :as s] 
+            [clojure.spec.alpha :as s]
             [re-frame.core :as rf]))
 
 
@@ -38,7 +38,7 @@
   #(some (partial = \space) %))
 
 
-(s/def ::newline-last-if-present 
+(s/def ::newline-last-if-present
   #(or (not (s/valid? ::new-line-present %))
        (= \newline (last %))))
 
@@ -78,7 +78,7 @@
                             (:args)
                             (:sheet-width))
             result (% :ret)]
-        (= result 
+        (= result
            (->> (partition-by (partial s/valid?
                                        ::db/whitespace)
                               in-text)
@@ -167,7 +167,7 @@
   ([formatted-text character-index]
    (current-line formatted-text character-index 0))
   ([remaining-rows character-index characters-count]
-   (let [[row-index row] (first remaining-rows) 
+   (let [[row-index row] (first remaining-rows)
          next-chars-count (+ characters-count (count row))
          next-remaining-rows (rest remaining-rows)]
      (if (or
@@ -176,7 +176,7 @@
        row-index
        (recur next-remaining-rows
               character-index
-              next-chars-count))))) 
+              next-chars-count)))))
 
 
 (s/def ::error
@@ -185,7 +185,7 @@
 
 (s/fdef
  format-text
- :args (s/cat :text ::db/exercise-text  
+ :args (s/cat :text ::db/exercise-text
               :sheet-width ::db/width)
  :ret (s/keys :req [::result]
               :opt [::value ::error])
@@ -293,7 +293,7 @@
 (rf/reg-sub
  ::exercise-timer-current-formatted
  :<- [::exercise-timer-current]
- (fn [current _] 
+ (fn [current _]
    (let [minutes (quot current 60)
          seconds (mod current 60)]
      (str (if (< minutes 10)
@@ -310,7 +310,7 @@
  :<- [::exercise-text-actual]
  :<- [::exercise-text-expected]
  (fn [[text-actual text-expected] _]
-   (-> (count text-actual) 
+   (-> (count text-actual)
        (* 100)
        (/ (count text-expected))
        (str "%"))))
@@ -358,16 +358,21 @@
        text-expected]
       _]
    (cond
+
      (or (not summary-modal-open)
-         (not finished)) ""
-     (zero? timer-current) (let [exercise-time (- timer-initial timer-current)
-                                 text-length (->> (map = text-expected text-actual)
-                                       (filter true?)
-                                       (count))]
-                             (str "You failed! Your speed was "
-                                  (int (/ (* 60 text-length)
-                                          exercise-time))
-                                  " c/m."))
+         (not finished))
+     ""
+
+     (zero? timer-current)
+     (let [exercise-time (- timer-initial timer-current)
+           text-length (->> (map = text-expected text-actual)
+                            (filter true?)
+                            (count))]
+       (str "You failed! Your speed was "
+            (int (/ (* 60 text-length)
+                    exercise-time))
+            " c/m."))
+
      :else (let [exercise-time (- timer-initial
                                   timer-current)
                  text-length (count text-expected)]

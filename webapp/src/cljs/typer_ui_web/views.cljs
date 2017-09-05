@@ -21,10 +21,10 @@
                "hidden")}
      [:div.ui.loader
       {:class (when (not loader-visible?)
-                "hidden")}] 
+                "hidden")}]
      [main-menu-views/login-menu]]))
 
- 
+
 (defn home-view []
   [:div
    [main-menu-views/main-menu]
@@ -42,7 +42,7 @@
       ::db/exercise [exercise-views/exercise-view
                      [::events/navigated-to-home]])))
 
- 
+
 (defn main-panel []
   [:div#main-panel
    [dimmer]

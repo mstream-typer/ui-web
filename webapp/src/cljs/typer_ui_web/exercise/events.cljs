@@ -16,6 +16,10 @@
   "{exercise(id:%s){time text}}")
 
 
+(def response-format
+  (ajax/json-response-format {:keywords? true}))
+
+
 (s/def ::time
   int?)
 
@@ -95,7 +99,7 @@
                         (:db)
                         (::db/exercise)
                         (::db/data)
-                        (::db/started)) 
+                        (::db/started))
          in-finished (-> %
                          (:args)
                          (:cofx)
@@ -173,7 +177,7 @@
                                        (::common-db/visible))]
      (if (and in-started?
               (not in-finished?)
-              (zero? in-timer))  
+              (zero? in-timer))
        (and out-finished
             out-summary-modal-visible)
        true)))
@@ -235,7 +239,7 @@
        true)))
 
 
-(s/def ::exercise-state-resets 
+(s/def ::exercise-state-resets
   #(let [in-exercise (-> %
                          (:args)
                          (:cofx)
@@ -302,7 +306,7 @@
                  ::db/data
                  ::db/text
                  ::db/current)))))
-             
+
 
 (s/def ::finishes-exercise-when-whole-text-matches
   #(let [ch (-> %
@@ -382,7 +386,7 @@
                            (:cofx)
                            (:db)
                            (::db/exercise)
-                           (::db/data)                              
+                           (::db/data)
                            (::db/text)
                            (::db/actual))
         out-text-actual (-> %
@@ -410,7 +414,7 @@
                            (:cofx)
                            (:db)
                            (::db/exercise)
-                           (::db/data)                              
+                           (::db/data)
                            (::db/text)
                            (::db/actual))
          in-text-expected (-> %
@@ -432,7 +436,7 @@
               (= (count in-text-actual)
                  (count in-text-expected)))
        (= out-text-actual in-text-actual)
-       true))) 
+       true)))
 
 
 (s/def ::appends-new-character-after-last-character
@@ -582,7 +586,7 @@
                               ::db/exercise
                               ::db/data
                               ::db/timer
-                              ::db/initial)         
+                              ::db/initial)
          out-text-expected (-> %
                                :ret
                                :db
@@ -607,10 +611,10 @@
        true)))
 
 
-(s/fdef 
+(s/fdef
  character-typed
  :args (s/cat :cofx ::common-events/coeffects
-              :event ::character-typed-event) 
+              :event ::character-typed-event)
  :ret (s/and ::common-events/effects
              ::starts-exercise)
  :fn (s/and ::finishes-exercise-when-whole-text-matches
@@ -634,13 +638,19 @@
                         (::db/data)
                         (::db/text)
                         (::db/actual))
-        next-text-actual (cond 
-                           (= \backspace character) (if (empty? text-actual)
-                                                      text-actual
-                                                      (pop text-actual))
+        next-text-actual (cond
+
+                           (= \backspace character)
+                           (if (empty? text-actual)
+                             text-actual
+                             (pop text-actual))
+
                            (= (count text-actual)
-                              (count text-expected)) text-actual
-                           :else (conj text-actual character))]
+                              (count text-expected))
+                           text-actual
+
+                           :else
+                           (conj text-actual character))]
     {:db (if exercise-finished?
            db
            (-> db
@@ -654,7 +664,7 @@
                           ::db/actual]
                          next-text-actual)
                (assoc-in [::db/exercise
-                          ::db/data 
+                          ::db/data
                           ::db/finished]
                          (= next-text-actual text-expected))
           (assoc-in [::db/exercise
@@ -668,10 +678,10 @@
  character-typed)
 
 
-(s/fdef 
+(s/fdef
  timer-ticked
- :args (s/cat :cofx ::common-events/coeffects  
-              :event ::common-events/parameterless-event) 
+ :args (s/cat :cofx ::common-events/coeffects
+              :event ::common-events/parameterless-event)
  :ret (s/and ::common-events/effects
              ::exercise-timer-does-not-go-below-zero)
  :fn (s/and ::exercise-timer-counts-down
@@ -719,10 +729,10 @@
  timer-ticked)
 
 
-(s/fdef 
- exercise-restarted 
+(s/fdef
+ exercise-restarted
  :args (s/cat :cofx ::common-events/coeffects
-              :event ::common-events/parameterless-event) 
+              :event ::common-events/parameterless-event)
  :ret ::common-events/effects
  :fn ::exercise-state-resets)
 (defn exercise-restarted [{:keys [db]}
@@ -770,7 +780,7 @@
  exercise-restarted)
 
 
-(s/fdef 
+(s/fdef
  exercise-loading-requested
  :args (s/cat :cofx ::common-events/coeffects
               :event ::exercise-loading-requested-event)
@@ -789,7 +799,7 @@
                         :params {:query (str/format exercise-query-fmt
                                                     exercise-id)}
                         :timeout 5000
-                        :response-format (ajax/json-response-format {:keywords? true})
+                        :response-format response-format
                         :on-success [::exercise-loading-succeed]
                         :on-failure [::exercise-loading-failed]}})
 
@@ -799,7 +809,7 @@
  exercise-loading-requested)
 
 
-(s/fdef 
+(s/fdef
  exercise-loading-succeed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::exercise-loading-succeed-event)
@@ -816,17 +826,23 @@
                           vec)]
     (cond (not (s/valid? ::db/exercise-timer-initial
                          exercise-time))
-          {:db db
-           :dispatch [::exercise-loading-failed (str "invalid exercise time: "
-                                                     (s/explain-data ::db/exercise-timer-initial
-                                                                     exercise-time))]}
-          
+          (let [error-msg "invalid exercise time"
+                error-details (s/explain-data ::db/exercise-timer-initial
+                                              exercise-time)]
+            {:db db
+             :dispatch [::exercise-loading-failed
+                        error-msg
+                        error-details]})
+
           (not (s/valid? ::db/exercise-text
                          exercise-text))
-          {:db db
-           :dispatch [::exercise-loading-failed (str "invalid exercise text: "
-                                                     (s/explain-data ::db/exercise-text
-                                                                     exercise-text))]}
+          (let [error-msg "invalid exercise text"
+                error-details (s/explain-data ::db/exercise-text
+                                              exercise-text)]
+            {:db db
+             :dispatch [::exercise-loading-failed
+                        error-msg
+                        error-details]})
 
           :else
           {:db (-> db
@@ -852,14 +868,14 @@
  exercise-loading-succeed)
 
 
-(s/fdef 
+(s/fdef
  exercise-loading-failed
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/failure-event)
  :ret (s/and ::common-events/effects
              ::loader-hides))
 (defn exercise-loading-failed [{:keys [db]}
-                               [_ error]]
+                               [_ [message details]]]
   {:db (-> db
            (assoc-in [::db/exercise
                       ::db/ui
@@ -870,5 +886,3 @@
 (rf/reg-event-fx
  ::exercise-loading-failed
  exercise-loading-failed)
-
-

@@ -46,11 +46,3 @@
 (defn course-view [navigate-to-exercise-request-event]
   [course-panel
    navigate-to-exercise-request-event])
-
-
-
-
-
-
-
-

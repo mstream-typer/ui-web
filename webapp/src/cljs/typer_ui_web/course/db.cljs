@@ -38,5 +38,3 @@
   {::course {::data {::name ""
                      ::exercises []}
              ::ui {::common-db/loader {::common-db/visible false}}}})
-
-                       
