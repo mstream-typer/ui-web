@@ -20,6 +20,7 @@
    [lein-bikeshed "0.4.1"]
    [lein-cljsbuild "1.1.6"]
    [lein-garden "0.3.0"]
+   [lein-kibit "0.1.6-beta2"]
    [macluck/lein-docker "1.3.0"]]
 
 
@@ -96,6 +97,7 @@
   :aliases
   {"build" ["do"
             ["bikeshed"]
+            ["kibit"]
             ["deps"]
             ;["doo" "phantom" "test" "once"]
             ["cljsbuild" "once"]

@@ -139,10 +139,9 @@
      (wait-invisible "#dimmer .loader")
      (wait-visible "#course-panel"))
    (let [expected-exercises (set (table->rows exercises-data))
-         exercise-texts (->> (eta/query-all driver
-                                            ".exercise-item")
-                             (map (partial eta/get-element-text-el
-                                           driver)))]
+         exercise-texts (map (partial eta/get-element-text-el
+                                      driver)
+                             (eta/query-all driver ".exercise-item"))]
      (test/is (= (count expected-exercises)
                  (count exercise-texts)))
      (test/is (every? (fn [{:keys [name
@@ -181,10 +180,13 @@
    (doto driver
      (wait-invisible "#dimmer .loader")
      (wait-visible "#exercise"))
-   (let [expected-lines (->> (table->rows lines-data)
-                             (map #(get % :line "")))
-         actual-lines (->> (eta/query-all driver
-                                          "#exercise .line")
-                           (map (partial eta/get-element-text-el driver)))]
+   (let [expected-lines (map #(get %
+                                   :line
+                                   "")
+                             (table->rows lines-data))
+         actual-lines (map (partial eta/get-element-text-el
+                                    driver)
+                           (eta/query-all driver
+                                          "#exercise .line"))]
      (test/is (= actual-lines
                  expected-lines)))))

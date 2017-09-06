@@ -12,6 +12,7 @@
   [[lein-ancient "0.6.10"]
    [lein-bikeshed "0.4.1"]
    [lein-cucumber "1.0.2"]
+   [lein-kibit "0.1.6-beta2"]
    [lein-shell "0.5.0"]]
 
   
@@ -42,6 +43,7 @@
                      ["shell" "docker-compose" "up" "-d"]]
    "ft" ["do"
          ["bikeshed"]
+         ["kibit"]
          ["docker-compose"]
          ["cucumber"]]})
 

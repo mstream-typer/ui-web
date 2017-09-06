@@ -57,7 +57,7 @@
 
 (defn sign-in-menu-item []
   (let [username (<sub [::subs/username])
-        signed-in? (not (empty? username))]
+        signed-in? (seq username)]
     (if signed-in?
       (let [dropdown-open? (<sub [::subs/user-dropdown-visible])]
         [:div.ui.right.dropdown.item

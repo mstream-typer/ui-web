@@ -114,8 +114,8 @@
          result (-> %
                     (:ret)
                     (::result))]
-     (if (not (words-fit-sheet-width? in-text
-                                      sheet-width))
+     (if-not (words-fit-sheet-width? in-text
+                                     sheet-width)
        (and (= result ::failure)
             (-> %
                 (:ret)
@@ -195,8 +195,8 @@
 (def format-text
   (memoize
    (fn [text sheet-width]
-     (if (not (words-fit-sheet-width? text
-                                      sheet-width))
+     (if-not (words-fit-sheet-width? text
+                                     sheet-width)
        {::result ::failure
         ::error "words don't fit the sheet width"}
        (loop [result []

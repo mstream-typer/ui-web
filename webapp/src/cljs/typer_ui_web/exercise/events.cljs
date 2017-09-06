@@ -80,7 +80,7 @@
                              ::common-db/loader
                              ::common-db/visible)
          dispatching? (:dispatch %)]
-     (if (not dispatching?)
+     (if-not dispatching?
        (not loader-visible?)
        true)))
 
@@ -206,7 +206,7 @@
                        (::db/data)
                        (::db/timer)
                        (::db/current))]
-     (if (not in-started?)
+     (if-not in-started?
        (= out-timer in-timer)
        true)))
 

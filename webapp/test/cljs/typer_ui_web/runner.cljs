@@ -55,12 +55,13 @@
                              {:clojure.test.check/opts {:num-tests 50}})
         failures (results->failures results)
         failures-cnt (count failures)]
-    (when (not (empty? failures)) (do (pp/pprint "===>")
-                                      (pp/pprint failures)
-                                      (pp/pprint (str "there are "
-                                                      failures-cnt
-                                                      " test failures"))
-                                      (pp/pprint "<===")))
+    (when (seq failures)
+      (pp/pprint "===>")
+      (pp/pprint failures)
+      (pp/pprint (str "there are "
+                      failures-cnt
+                      " test failures"))
+      (pp/pprint "<==="))
     (test/is (empty? (map :function failures)))))
 
 

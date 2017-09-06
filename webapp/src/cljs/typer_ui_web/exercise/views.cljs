@@ -412,7 +412,7 @@
         key->char {"Backspace" \backspace
                    "Enter" \newline}
         key (.-key e)]
-    (when (not (modifier-keys key))
+    (when-not (modifier-keys key)
       (evt> [::events/character-typed
              (-> e
                  (.-key)
