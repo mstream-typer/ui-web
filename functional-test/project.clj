@@ -41,6 +41,7 @@
                      ["shell" "docker-compose" "down"]
                      ["shell" "docker-compose" "up" "-d"]]
    "ft" ["do"
+         ["bikeshed"]
          ["docker-compose"]
          ["cucumber"]]})
 

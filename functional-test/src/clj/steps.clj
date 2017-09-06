@@ -22,11 +22,11 @@
                       wait-opts))
 
 
-(def course-api-request-body-pattern
+(def course-api-req-body-pattern
   "^\\{course\\(id:\\w+\\)\\{name exercises\\{id name description\\}\\}\\}$")
 
 
-(def exercise-api-request-body-pattern
+(def exercise-api-req-body-pattern
   "^\\{exercise\\(id:\\w+\\)\\{time text\\}\\}$")
 
 
@@ -39,7 +39,7 @@
 
 (def postmortem-opts {:dir "/tmp"})
 
-  
+
 (def driver (eta/boot-driver :phantom
                              {:args ["--web-security=false"]}))
 
@@ -52,9 +52,10 @@
 
 
 (defn stub [request response]
-  (let [{:keys [status body]} @(http/post wiremock-mappings
-                                     {:body (json/write-str {"request" request
-                                                             "response" response})})]
+  (let [body {:body (json/write-str {"request" request
+                                     "response" response})}
+        {:keys [status body]} @(http/post wiremock-mappings
+                                          body)]
     (when (not= 201 status)
       (throw (Exception. (str "error while stubbing: "
                               body))))))
@@ -70,7 +71,7 @@
  [exercises]
  (stub {:method "GET"
         :urlPath "/api"
-        :queryParameters {:query {:matches course-api-request-body-pattern}}}
+        :queryParameters {:query {:matches course-api-req-body-pattern}}}
        {:status 200
         :jsonBody {:data {:course {:name "course0"
                                    :exercises (table->rows exercises)}}}}))
@@ -79,14 +80,15 @@
 (Given
  #"^typer service responds with following exercise '(\w+)' details$"
  [exercise-id exercise-data]
- (let [{:keys [time text]} (first (table->rows exercise-data))] 
+ (let [{:keys [time text]} (first (table->rows exercise-data))]
    (stub {:method "GET"
           :urlPath "/api"
-          :queryParameters {:query {:matches exercise-api-request-body-pattern}}}
+          :queryParameters {:query {:matches exercise-api-req-body-pattern}}}
          {:status 200
           :jsonBody {:data {:exercise {:time time
                                        :text text}}}})))
-       
+
+
 (When
  #"^user enters the home page$"
  []
