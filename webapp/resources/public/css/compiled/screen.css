@@ -35,7 +35,7 @@
 }
 
 #exercise .text .character-untyped {
-  color: #888888;
+  color: #666666;
 }
 
 #exercise .text .character-typed {
@@ -43,7 +43,7 @@
 }
 
 #exercise .text .whitespace-untyped {
-  color: #888888;
+  color: #AAAAAA;
 }
 
 #exercise .text .whitespace-typed {

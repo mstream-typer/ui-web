@@ -19,7 +19,7 @@
     [".cursor" {:border-bottom-width (px 3)
                 :border-bottom-style "solid"
                 :border-bottom-color "#00FF00"}]
-    [".character-untyped" {:color "#888888"}]
+    [".character-untyped" {:color "#666666"}]
     [".character-typed" {:color "#000000"}]
-    [".whitespace-untyped" {:color "#888888"}]
+    [".whitespace-untyped" {:color "#AAAAAA"}]
     [".whitespace-typed" {:color "#FFFFFF"}]]])

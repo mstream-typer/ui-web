@@ -44,6 +44,9 @@
                              {:args ["--web-security=false"]}))
 
 
+(eta/set-window-size driver 800 600)
+
+
 (eta/use-css driver)
 
 
@@ -190,3 +193,15 @@
                                           "#exercise .line"))]
      (test/is (= actual-lines
                  expected-lines)))))
+
+
+(When
+ #"^user types '([^']+)'$"
+ [text]
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+     (wait-visible "#exercise")
+     (eta/fill "#exercise" text))))

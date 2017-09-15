@@ -45,7 +45,7 @@
          ["bikeshed"]
          ["kibit"]
          ["docker-compose"]
-         ["cucumber"]]})
+         ["cucumber" "--tags" "@current"]]})
 
 
 
