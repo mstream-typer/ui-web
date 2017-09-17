@@ -5,6 +5,7 @@
             [cemerick.url :as url]
             [cuerdas.core :as str]
             [day8.re-frame.http-fx]
+            [typer-ui-web.config :as config]
             [typer-ui-web.course.db :as db]
             [typer-ui-web.common.db :as common-db]
             [typer-ui-web.common.core :refer [evt> <sub]]
@@ -112,7 +113,7 @@
                expected-exercises))))
 
 
-(s/def ::sends-get-courses-request
+(s/def ::sends-get-course-request
   #(let [in-course-id (-> %
                           :args
                           :event
@@ -121,7 +122,7 @@
                          :ret
                          :http-xhrio)
          expected-request {:method :get
-                           :uri "http://localhost:8080/api"
+                           :uri config/api-base-url
                            :params {:query (str/format course-query-fmt
                                                        in-course-id)}
                            :timeout 5000
@@ -137,7 +138,7 @@
               :event ::course-loading-requested-event)
  :ret (s/and ::common-events/effects
              ::loader-shows-up)
- :fn ::sends-get-courses-request)
+ :fn ::sends-get-course-request)
 (defn course-loading-requested [{:keys [db]}
                                 [_ course-id]]
   {:db (-> db
@@ -147,7 +148,7 @@
                       ::common-db/visible]
                      true))
    :http-xhrio {:method :get
-                :uri "http://localhost:8080/api"
+                :uri config/api-base-url
                 :params {:query (str/format course-query-fmt
                                             course-id)}
                 :timeout 5000

@@ -16,4 +16,3 @@ Scenario: user finishes exercise
   And user types 'line2 line2\n'
   And user types 'line3 line3\n'
   And user types 'line4 line4'
-  And user navigates to the exercise called 'name1'

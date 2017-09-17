@@ -63,7 +63,7 @@
   
 
   :docker
-  {:image-name "mstream/typer-ui-web"
+  {:image-name "typer/typer-ui-web"
    :dockerfile "Dockerfile"
    :build-dir  "."}
 
@@ -82,7 +82,7 @@
             {:id "min"
              :source-paths ["src/cljs"]
              :compiler {:main typer-ui-web.core
-                        :output-to "resources/public/js/compiled/app.js"
+                        :output-to "resources/public/js/compiled/min.js"
                         :optimizations :advanced
                         :closure-defines {goog.DEBUG false}
                         :pretty-print false}}

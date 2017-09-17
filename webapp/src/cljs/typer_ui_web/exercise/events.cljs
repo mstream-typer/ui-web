@@ -7,6 +7,7 @@
             [cuerdas.core :as str]
             [day8.re-frame.http-fx]
             [typer-ui-web.common.events :as common-events]
+            [typer-ui-web.config :as config]
             [typer-ui-web.db :as core-db]
             [typer-ui-web.exercise.db :as db]
             [typer-ui-web.common.db :as common-db]))
@@ -611,6 +612,24 @@
        true)))
 
 
+(s/def ::sends-get-exercise-request
+  #(let [in-exercise-id (-> %
+                          :args
+                          :event
+                          second)
+         out-request (-> %
+                         :ret
+                         :http-xhrio)
+         expected-request {:method :get
+                           :uri config/api-base-url
+                           :params {:query (str/format exercise-query-fmt
+                                                       in-exercise-id)}
+                           :timeout 5000
+                           :on-success [::exercise-loading-succeed]
+                           :on-failure [::exercise-loading-failed]}]
+     (= (dissoc out-request :response-format)
+        expected-request)))
+
 (s/fdef
  character-typed
  :args (s/cat :cofx ::common-events/coeffects
@@ -785,7 +804,8 @@
  :args (s/cat :cofx ::common-events/coeffects
               :event ::exercise-loading-requested-event)
  :ret (s/and ::common-events/effects
-             ::loader-shows-up))
+             ::loader-shows-up)
+ :fn ::sends-get-exercise-request)
 (defn exercise-loading-requested [{:keys [db]}
                                   [_ exercise-id]]
   {:db (-> db
@@ -795,7 +815,7 @@
                       ::common-db/visible]
                      true))
            :http-xhrio {:method :get
-                        :uri "http://localhost:8080/api"
+                        :uri config/api-base-url
                         :params {:query (str/format exercise-query-fmt
                                                     exercise-id)}
                         :timeout 5000
