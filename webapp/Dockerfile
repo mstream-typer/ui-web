@@ -1,4 +1,4 @@
-FROM nginx:1.13.3
+FROM nginx:1.13.5-alpine
 
 COPY resources/public/img /usr/share/nginx/html/img
 COPY resources/public/css /usr/share/nginx/html/css
