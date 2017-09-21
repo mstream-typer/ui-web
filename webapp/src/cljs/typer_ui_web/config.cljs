@@ -24,4 +24,4 @@
 
 
 (def api-base-url
-  (str scheme "://" host ":" port "/api"))
+  (str scheme "://" host ":" port "/graphql"))

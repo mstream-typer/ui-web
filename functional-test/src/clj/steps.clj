@@ -73,7 +73,7 @@
  #"^typer service responds with following course exercises$"
  [exercises]
  (stub {:method "GET"
-        :urlPath "/api"
+        :urlPath "/graphql"
         :queryParameters {:query {:matches course-api-req-body-pattern}}}
        {:status 200
         :jsonBody {:data {:course {:name "course0"
@@ -85,7 +85,7 @@
  [exercise-id exercise-data]
  (let [{:keys [time text]} (first (table->rows exercise-data))]
    (stub {:method "GET"
-          :urlPath "/api"
+          :urlPath "/graphql"
           :queryParameters {:query {:matches exercise-api-req-body-pattern}}}
          {:status 200
           :jsonBody {:data {:exercise {:time time
