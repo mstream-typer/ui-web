@@ -5,6 +5,7 @@
             [typer-ui-web.subs :as subs]
             [typer-ui-web.course.views :as course-views]
             [typer-ui-web.exercise.views :as exercise-views]
+            [typer-ui-web.home.views :as home-views]
             [typer-ui-web.main-menu.views :as main-menu-views]
             [re-frame.core :as rf]
             [clojure.spec.alpha :as s]
@@ -25,25 +26,26 @@
      [main-menu-views/login-menu]]))
 
 
-(defn home-view []
+(defn error-view []
   [:div
-   [main-menu-views/main-menu]
-   [:div.course.ui.button
-    {:on-click #(evt> [::events/navigated-to-course 1])}
-    "Course"]])
+   [:h1 "Error"]])
 
 
 (defn view []
   (let [view (<sub [::subs/view])]
     (case view
-      ::db/home [home-view]
+      ::db/home [home-views/home-view
+                 main-menu-views/main-menu
+                 [::events/navigated-to-course]]
       ::db/course [course-views/course-view
+                   [::events/navigated-to-home]
                    [::events/navigated-to-exercise]]
       ::db/exercise [exercise-views/exercise-view
-                     [::events/navigated-to-home]])))
+                     [::events/navigated-to-course]]
+      [error-view])))
 
 
 (defn main-panel []
-  [:div#main-panel
+  [:div#main-panel.ui.container
    [dimmer]
    [view]])

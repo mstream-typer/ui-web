@@ -22,11 +22,15 @@
                       wait-opts))
 
 
-(def course-api-req-body-pattern
+(def courses-api-query-fmt
+  "^\\{courses\\{id name description\\}\\}$")
+
+
+(def course-api-query-fmt
   "^\\{course\\(id:\\w+\\)\\{name exercises\\{id name description\\}\\}\\}$")
 
 
-(def exercise-api-req-body-pattern
+(def exercise-api-query-fmt
   "^\\{exercise\\(id:\\w+\\)\\{time text\\}\\}$")
 
 
@@ -70,14 +74,25 @@
 
 
 (Given
- #"^typer service responds with following course exercises$"
- [exercises]
+ #"^typer service responds with following courses$"
+ [courses-data]
  (stub {:method "GET"
         :urlPath "/graphql"
-        :queryParameters {:query {:matches course-api-req-body-pattern}}}
+        :queryParameters {:query {:matches courses-api-query-fmt}}}
        {:status 200
-        :jsonBody {:data {:course {:name "course0"
-                                   :exercises (table->rows exercises)}}}}))
+        :jsonBody {:data {:courses (table->rows courses-data)}}}))
+
+
+(Given
+ #"^typer service responds with following course '(\w+)' exercises$"
+ [course-id exercises-data]
+ (stub {:method "GET"
+        :urlPath "/graphql"
+        :queryParameters {:query {:matches (format course-api-query-fmt
+                                                   course-id)}}}
+       {:status 200
+        :jsonBody {:data {:course {:name course-id
+                                   :exercises (table->rows exercises-data)}}}}))
 
 
 (Given
@@ -86,7 +101,8 @@
  (let [{:keys [time text]} (first (table->rows exercise-data))]
    (stub {:method "GET"
           :urlPath "/graphql"
-          :queryParameters {:query {:matches exercise-api-req-body-pattern}}}
+          :queryParameters {:query {:matches (format exercise-api-query-fmt
+                                                     exercise-id)}}}
          {:status 200
           :jsonBody {:data {:exercise {:time time
                                        :text text}}}})))
@@ -103,19 +119,25 @@
 
 
 (When
- #"^user navigates to the course page$"
- []
+ #"^user navigates to the course called '(.*)'$"
+ [course-name]
  (eta/with-postmortem
    driver
    postmortem-opts
    (doto driver
      (wait-invisible "#dimmer .loader")
-     (wait-visible "#main-panel .course.button")
-     (eta/click "#main-panel .course.button"))))
+     (wait-visible "#courses-panel"))
+   (->> (eta/query-all driver ".course-item")
+        (filter #(str/includes? (eta/get-element-text-el driver
+                                                         %)
+                                course-name))
+        (first)
+        (#(eta/get-element-attr-el driver % :id))
+        (#(eta/click driver (str "#" % " .button"))))))
 
 
 (When
- #"^user navigates to the exercise called '(\w+)'$"
+ #"^user navigates to the exercise called '(.*)'$"
  [exercise-name]
  (eta/with-postmortem
    driver
@@ -130,6 +152,34 @@
         (first)
         (#(eta/get-element-attr-el driver % :id))
         (#(eta/click driver (str "#" % " .button"))))))
+
+
+(Then
+ #"^user should see following courses$"
+ [courses-data]
+ (eta/with-postmortem
+   driver
+   postmortem-opts
+   (doto driver
+     (wait-invisible "#dimmer .loader")
+     (wait-visible "#courses-panel"))
+   (let [expected-courses (set (table->rows courses-data))
+         exercise-texts (map (partial eta/get-element-text-el
+                                      driver)
+                             (eta/query-all driver ".course-item"))]
+     (test/is (= (count expected-courses)
+                 (count exercise-texts)))
+     (test/is (every? (fn [{:keys [name
+                                   description]}]
+                        (some (fn [exercise-text]
+                                (and (str/includes? exercise-text
+                                                    name)
+                                     (str/includes? exercise-text
+                                                    description)
+                                     (str/includes? exercise-text
+                                                    "Start")))
+                              exercise-texts))
+                      expected-courses)))))
 
 
 (Then

@@ -9,6 +9,9 @@
             [typer-ui-web.exercise.subs]
             [typer-ui-web.exercise.events]
             [typer-ui-web.exercise.views]
+            [typer-ui-web.home.subs]
+            [typer-ui-web.home.events]
+            [typer-ui-web.home.views]
             [typer-ui-web.main-menu.subs]
             [typer-ui-web.main-menu.events]
             [typer-ui-web.main-menu.views]
@@ -49,6 +52,9 @@
                               `typer-ui-web.exercise.subs
                               `typer-ui-web.exercise.events
                               `typer-ui-web.exercise.views
+                              `typer-ui-web.home.subs
+                              `typer-ui-web.home.events
+                              `typer-ui-web.home.views
                               `typer-ui-web.main-menu.subs
                               `typer-ui-web.main-menu.events
                               `typer-ui-web.main-menu.views]

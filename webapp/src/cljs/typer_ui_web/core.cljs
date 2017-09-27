@@ -22,5 +22,6 @@
 
 (defn ^:export init []
   (rf/dispatch-sync [::events/db-initialized])
+  (rf/dispatch-sync [::events/navigated-to-home])
   (dev-setup)
   (mount-root))

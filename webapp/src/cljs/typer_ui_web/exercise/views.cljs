@@ -350,19 +350,19 @@
       [:div.bar {:style {:width progress}}]]]))
 
 
-(defn exercise-menu [navigate-to-home-requested-event]
+(defn exercise-menu [navigated-to-course-event]
   [:div.ui.menu
    [:div.item
-    [:div.ui.button
-     {:on-click #(evt> navigate-to-home-requested-event)}
-     "Back"]]
+    [:div.ui.labeled.icon.button
+     {:on-click #(evt> navigated-to-course-event)}
+     [:i.arrow.left.icon] "Back"]]
    [:div.item
-    [:div.ui.button
+    [:div.ui.labeled.icon.button
      {:on-click #(evt> [::events/exercise-restarted])}
-     "Restart"]]])
+     [:i.repeat.icon] "Restart"]]])
 
 
-(defn exercise-summary-modal [navigate-to-home-requested-event]
+(defn exercise-summary-modal [navigated-to-course-event]
   (let [visible (<sub [::subs/summary-modal-open])
         modal-message (<sub [::subs/summary-modal-message])]
     [:div.ui.standard.modal.transition
@@ -373,7 +373,7 @@
      [:div.content modal-message]
      [:div.actions
       [:div.ui.right.labeled.icon.button
-       {:on-click #(evt> navigate-to-home-requested-event)}
+       {:on-click #(evt> navigated-to-course-event)}
        "Main menu"
        [:i.home.icon]]
       [:div.ui.right.labeled.icon.button
@@ -386,22 +386,23 @@
        [:i.arrow.circle.right.icon]]]]))
 
 
-(defn dimmer [navigate-to-home-requested-event]
+(defn dimmer [navigated-to-course-event]
   (let [active (<sub [::subs/modal-open])]
     [:div#dimmer.ui.dimmer.modals.page.transition
      {:class (if active
                "visible active"
                "hidden")}
      [exercise-summary-modal
-      navigate-to-home-requested-event]]))
+      navigated-to-course-event]]))
 
 
-(defn exercise-view [navigate-to-home-requested-event]
+(defn exercise-view [navigated-to-course-event]
   [:div
-   [exercise-menu navigate-to-home-requested-event]
+   [exercise-menu
+    navigated-to-course-event]
    [exercise-panel]
    [dimmer
-    navigate-to-home-requested-event]])
+    navigated-to-course-event]])
 
 
 (defn key-press-listener [e]

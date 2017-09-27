@@ -2,7 +2,7 @@
 
 
   :dependencies
-  [[org.clojure/clojure "1.9.0-alpha17"]
+  [[org.clojure/clojure "1.9.0-beta1"]
    [etaoin "0.1.6"]
    [http-kit "2.2.0"]
    [org.clojure/data.json "0.2.6"]]

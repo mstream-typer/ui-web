@@ -4,6 +4,7 @@
             [typer-ui-web.common.events :as common-events]
             [typer-ui-web.course.events :as course-events]
             [typer-ui-web.exercise.events :as exercise-events]
+            [typer-ui-web.home.events :as home-events]
             [clojure.spec.alpha :as s]
             [clojure.test.check.generators :as gen]
             [typer-ui-web.db :as db]
@@ -55,6 +56,14 @@
   (s/keys :req [::exercise-id
                 ::on-success
                 ::on-failure]))
+
+
+(s/def ::view-changes-to-home
+  #(= ::db/home
+      (-> %
+          (:db)
+          (::db/ui)
+          (::db/view))))
 
 
 (s/def ::view-changes-to-course
@@ -127,6 +136,14 @@
   (partial = {:db db/default-db}))
 
 
+(s/def ::dispatches-courses-loading-request
+  #(let [out-dispatched-event (-> %
+                                  :ret
+                                  :dispatch)]
+     (= out-dispatched-event
+        [::home-events/courses-loading-requested])))
+
+
 (s/def ::dispatches-course-loading-request
   #(let [in-course-id (-> %
                           :args
@@ -170,19 +187,16 @@
  navigated-to-home
  :args (s/cat :cofx ::common-events/coeffects
               :event ::common-events/parameterless-event)
- :ret ::common-events/effects
- :fn #(let [out-view (-> %
-                         :ret
-                         :db
-                         ::db/ui
-                         ::db/view)]
-        (= out-view ::db/home)))
+ :ret (s/and ::common-events/effects
+              ::view-changes-to-home)
+ :fn ::dispatches-courses-loading-request)
 (defn navigated-to-home [{:keys [db]}
                          _]
   {:db (-> db
            (assoc-in [::db/ui
                       ::db/view]
-                     ::db/home))})
+                     ::db/home))
+   :dispatch [::home-events/courses-loading-requested]})
 
 (rf/reg-event-fx
  ::navigated-to-home
@@ -198,11 +212,15 @@
  :fn ::dispatches-course-loading-request)
 (defn navigated-to-course [{:keys [db]}
                            [_ course-id]]
+  (let [course-id (or course-id (-> db
+                                    ::db/course
+                                    ::db/data
+                                    ::db/id))]
   {:db (-> db
            (assoc-in [::db/ui
                       ::db/view]
                      ::db/course))
-   :dispatch [::course-events/course-loading-requested course-id]})
+   :dispatch [::course-events/course-loading-requested course-id]}))
 
 
 (rf/reg-event-fx

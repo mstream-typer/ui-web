@@ -2,7 +2,7 @@
 
 
   :dependencies
-  [[org.clojure/clojure "1.9.0-alpha17"]
+  [[org.clojure/clojure "1.9.0-alpha19"]
    [org.clojure/clojurescript "1.9.908"]
    [cljs-ajax "0.7.2"]
    [com.cemerick/url "0.1.1"]
@@ -11,14 +11,14 @@
    [reagent "0.7.0"]
    [re-frame "0.10.1"]
    [re-frisk "0.5.0"]
-   [garden "1.3.2"]
+   [garden "1.3.3"]
    [ns-tracker "0.3.1"]]
 
 
   :plugins
   [[lein-ancient "0.6.10"]
    [lein-bikeshed "0.4.1"]
-   [lein-cljsbuild "1.1.6"]
+   [lein-cljsbuild "1.1.7"]
    [lein-garden "0.3.0"]
    [lein-kibit "0.1.6-beta2"]
    [macluck/lein-docker "1.3.0"]]
@@ -45,7 +45,7 @@
   {:dev {:dependencies [[binaryage/devtools "0.9.4"]
                         [org.clojure/test.check "0.10.0-alpha2"]
                         [lein-doo "0.1.7"]]
-         :plugins [[lein-figwheel "0.5.11"]
+         :plugins [[lein-figwheel "0.5.13"]
                    [lein-doo "0.1.7"]]}}
   
 

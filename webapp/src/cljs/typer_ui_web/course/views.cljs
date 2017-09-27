@@ -11,26 +11,36 @@
             [clojure.string :as str]))
 
 
+(defn course-menu [navigated-to-home-event]
+  [:div.ui.menu
+   [:div.item
+    [:div.ui.labeled.icon.button
+     {:on-click #(evt> navigated-to-home-event)}
+     [:i.arrow.left.icon] "Back"]]])
+
+
 (defn exercise-card [id
                      name
                      desc
-                     navigate-to-exercise-request-event]
+                     navigated-to-exercise-event]
   [:div.exercise-item.card
    {:id (str "exercise-" id)}
    [:div.content
     [:div.header name]
     [:div.description desc]]
    [:div.ui.bottom.attached.positive.button
-    {:on-click #(evt> (conj navigate-to-exercise-request-event
+    {:on-click #(evt> (conj navigated-to-exercise-event
                             id))}
     "Train"]])
 
 
-(defn course-panel [navigate-to-exercise-request-event]
+(defn course-panel [navigated-to-exercise-event]
   (let [name (<sub [::subs/name])
         exercises (<sub [::subs/exercises])]
     [:div
-     [:div name
+     [:h2.ui.header
+      [:i.folder.open.outline.icon]
+      [:div.content name]]
       [:div#course-panel.ui.four.cards
        (for [{:keys [::common-db/id
                      ::db/name
@@ -40,9 +50,13 @@
           id
           name
           description
-          navigate-to-exercise-request-event])]]]))
+          navigated-to-exercise-event])]]))
 
 
-(defn course-view [navigate-to-exercise-request-event]
-  [course-panel
-   navigate-to-exercise-request-event])
+(defn course-view [navigated-to-home-event
+                   navigated-to-exercise-event]
+  [:div
+   [course-menu
+    navigated-to-home-event]
+   [course-panel
+    navigated-to-exercise-event]])

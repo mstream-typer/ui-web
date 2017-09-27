@@ -9,4 +9,6 @@ COPY docker/setup-env.sh /setup-env.sh
 
 RUN chmod +x /setup-env.sh
 
+EXPOSE 80
+
 CMD /setup-env.sh
