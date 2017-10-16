@@ -18,7 +18,7 @@
     [:div.content
      [:div.header name]
      [:div.description desc]]
-    [:div.ui.bottom.attached.positive.button
+    [:div.ui.bottom.attached.blue.button
      {:on-click #(evt> (conj navigate-to-exercise-request-event
                              id))}
      "Start"]])

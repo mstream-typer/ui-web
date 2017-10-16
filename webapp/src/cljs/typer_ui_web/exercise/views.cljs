@@ -351,7 +351,7 @@
 
 
 (defn exercise-menu [navigated-to-course-event]
-  [:div.ui.large.labeled.icon.menu
+  [:div#main-menu.ui.blue.large.labeled.icon.inverted.menu
    [:a.item
      {:on-click #(evt> navigated-to-course-event)}
      [:i.arrow.left.icon] "Back"]
@@ -372,11 +372,11 @@
      [:div.actions
       [:div.ui.labeled.icon.button
        {:on-click #(evt> navigated-to-course-event)}
-       [:i.arrow.left.icon] "Back"]
+       [:i.arrow.left.icon] "Back to the course"]
       [:div.ui.labeled.icon.button
        {:on-click #(evt> [::events/exercise-restarted])}
-       [:i.repeat.icon] "Restart"]
-      [:div.ui.positive.right.labeled.icon.button
+       [:i.repeat.icon] "Restart exercise"]
+      [:div.ui.blue.right.labeled.icon.button
        {:on-click #(evt> [::events/exercise-restarted])}
        "Next exercise"
        [:i.arrow.circle.right.icon]]]]))

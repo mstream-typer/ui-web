@@ -83,7 +83,7 @@
 
 (defn main-menu []
     [:div#main-menu
-     [:div.ui.large.labeled.icon.menu
-      [:div#main-title.item
+     [:div.ui.blue.large.labeled.icon.inverted.menu
+      [:div#main-title.active.item
        [:h1 "TYPER"]]
       [sign-in-menu-item]]])

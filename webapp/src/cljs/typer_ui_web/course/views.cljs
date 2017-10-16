@@ -11,11 +11,14 @@
             [clojure.string :as str]))
 
 
-(defn course-menu [navigated-to-home-event]
-  [:div.ui.large.labeled.icon.menu
+(defn course-menu [course-name
+                   navigated-to-home-event]
+  [:div#main-menu.ui.blue.large.labeled.icon.inverted.menu
    [:a.item
     {:on-click #(evt> navigated-to-home-event)}
-    [:i.arrow.left.icon] "Back"]])
+    [:i.arrow.left.icon] "Back"]
+   [:div.active.item
+    [:i.folder.open.outline.icon] course-name]])
 
 
 (defn exercise-card [id
@@ -27,7 +30,7 @@
    [:div.content
     [:div.header name]
     [:div.description desc]]
-   [:div.ui.bottom.attached.positive.button
+   [:div.ui.bottom.attached.blue.button
     {:on-click #(evt> (conj navigated-to-exercise-event
                             id))}
     "Train"]])
@@ -37,25 +40,24 @@
   (let [name (<sub [::subs/name])
         exercises (<sub [::subs/exercises])]
     [:div
-     [:h2.ui.header
-      [:i.folder.open.outline.icon]
-      [:div.content name]]
-      [:div#course-panel.ui.four.cards
-       (for [{:keys [::common-db/id
-                     ::db/name
-                     ::db/description]} exercises]
-         ^{:key id}
-         [exercise-card
-          id
-          name
-          description
-          navigated-to-exercise-event])]]))
+     [:div#course-panel.ui.four.cards
+      (for [{:keys [::common-db/id
+                    ::db/name
+                    ::db/description]} exercises]
+        ^{:key id}
+        [exercise-card
+         id
+         name
+         description
+         navigated-to-exercise-event])]]))
 
 
 (defn course-view [navigated-to-home-event
                    navigated-to-exercise-event]
-  [:div
-   [course-menu
-    navigated-to-home-event]
-   [course-panel
-    navigated-to-exercise-event]])
+  (let [name (<sub [::subs/name])]
+    [:div
+     [course-menu
+      name
+      navigated-to-home-event]
+     [course-panel
+      navigated-to-exercise-event]]))
