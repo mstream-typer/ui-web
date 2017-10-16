@@ -23,7 +23,9 @@
 
 
 (s/def ::data
-  (s/keys :req [::exercises]))
+  (s/keys :req [::common-db/id
+                ::name
+                ::exercises]))
 
 
 (s/def ::ui
@@ -35,7 +37,7 @@
 
 
 (def default-db
-  {::course {::data {::id nil
-                     ::name nil
-                     ::exercises nil}
+  {::course {::data {::common-db/id ""
+                     ::name ""
+                     ::exercises []}
              ::ui {::common-db/loader {::common-db/visible false}}}})

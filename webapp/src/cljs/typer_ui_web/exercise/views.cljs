@@ -372,14 +372,12 @@
      [:div.header "Exercise finished"]
      [:div.content modal-message]
      [:div.actions
-      [:div.ui.right.labeled.icon.button
+      [:div.ui.labeled.icon.button
        {:on-click #(evt> navigated-to-course-event)}
-       "Main menu"
-       [:i.home.icon]]
-      [:div.ui.right.labeled.icon.button
+       [:i.arrow.left.icon] "Back"]
+      [:div.ui.labeled.icon.button
        {:on-click #(evt> [::events/exercise-restarted])}
-       "Repeat"
-       [:i.repeat.icon]]
+       [:i.repeat.icon] "Restart"]
       [:div.ui.positive.right.labeled.icon.button
        {:on-click #(evt> [::events/exercise-restarted])}
        "Next exercise"

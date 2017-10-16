@@ -113,10 +113,6 @@
   (s/keys :req [::height ::width]))
 
 
-(s/def ::visible
-  boolean?)
-
-
 (s/def ::summary-modal
   (s/keys :req [::common-db/visible]))
 

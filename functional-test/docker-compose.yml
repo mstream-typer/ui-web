@@ -7,7 +7,7 @@ services:
     container_name: typer-ui-web
     image: typer/typer-ui-web:0.1.0-SNAPSHOT
     ports:
-      - "80:80"
+      - "80:8080"
     environment:
       - SCHEME=http
       - HOST=localhost

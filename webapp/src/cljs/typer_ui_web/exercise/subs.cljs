@@ -284,7 +284,7 @@
 
 (rf/reg-sub
  ::summary-modal-open
- (comp ::db/visible
+ (comp ::common-db/visible
        ::db/summary-modal
        ::db/ui
        ::db/exercise))

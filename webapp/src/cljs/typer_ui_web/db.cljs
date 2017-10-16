@@ -29,4 +29,4 @@
          exercise-db/default-db
          home-db/default-db
          main-menu-db/default-db
-         {::ui {::view nil}}))
+         {::ui {::view ::home}}))
