@@ -12,11 +12,10 @@
 
 
 (defn course-menu [navigated-to-home-event]
-  [:div.ui.menu
-   [:div.item
-    [:div.ui.labeled.icon.button
-     {:on-click #(evt> navigated-to-home-event)}
-     [:i.arrow.left.icon] "Back"]]])
+  [:div.ui.large.labeled.icon.menu
+   [:a.item
+    {:on-click #(evt> navigated-to-home-event)}
+    [:i.arrow.left.icon] "Back"]])
 
 
 (defn exercise-card [id

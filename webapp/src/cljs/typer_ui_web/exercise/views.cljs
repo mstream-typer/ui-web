@@ -351,15 +351,13 @@
 
 
 (defn exercise-menu [navigated-to-course-event]
-  [:div.ui.menu
-   [:div.item
-    [:div.ui.labeled.icon.button
+  [:div.ui.large.labeled.icon.menu
+   [:a.item
      {:on-click #(evt> navigated-to-course-event)}
-     [:i.arrow.left.icon] "Back"]]
-   [:div.item
-    [:div.ui.labeled.icon.button
+     [:i.arrow.left.icon] "Back"]
+   [:a.item
      {:on-click #(evt> [::events/exercise-restarted])}
-     [:i.repeat.icon] "Restart"]]])
+     [:i.repeat.icon] "Restart"]])
 
 
 (defn exercise-summary-modal [navigated-to-course-event]

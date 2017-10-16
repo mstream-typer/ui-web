@@ -77,10 +77,13 @@
       [:div.right.menu
        [:a.item
         {:on-click #(evt> [::events/login-menu-button-pressed])}
+        [:i.sign.in.icon]
         "Sign In"]])))
 
 
 (defn main-menu []
     [:div#main-menu
-     [:div.ui.large.menu
+     [:div.ui.large.labeled.icon.menu
+      [:div#main-title.item
+       [:h1 "TYPER"]]
       [sign-in-menu-item]]])

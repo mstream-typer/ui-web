@@ -6,6 +6,11 @@
 (defstyles screen
   [".modal" {:max-height "calc(100% - 100px)"
              :transform "translate(0, -50%)"}]
+  ["#main-menu" {:margin-bottom (em 4)}]
+  ["#main-title" {:padding-top 0
+                  :padding-bottom 0}
+   [:h1 {:font-family "Monofett"
+         :font-size (em 4)}]]
   ["#exercise" {:letter-spacing (em 0.05)
                 :line-height (em 1.25)
                 :padding-bottom (em 0.25)
