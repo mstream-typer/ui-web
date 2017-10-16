@@ -1,7 +1,7 @@
 *.log
 **/target
-/resources/public/css/compiled
-/resources/public/js/compiled
+webapp/resources/public/css/compiled
+webapp/resources/public/js/compiled
 **/out
 .lein-*
 *~

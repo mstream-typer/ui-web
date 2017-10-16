@@ -1,4 +1,4 @@
-(defproject typer-ui-web "0.2.0-SNAPSHOT"
+(defproject typer-ui-web "0.2.1-SNAPSHOT"
 
 
   :dependencies

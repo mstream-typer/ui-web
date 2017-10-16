@@ -73,7 +73,7 @@
         :db))
 
 
-(s/def ::loader-hides-when-not-dispatching
+(s/def ::loader-hides-when-successful
   #(let [loader-visible? (-> %
                              :db
                              ::db/exercise
@@ -83,6 +83,19 @@
          dispatching? (:dispatch %)]
      (if-not dispatching?
        (not loader-visible?)
+       true)))
+
+
+(s/def ::summary-modal-invisible-when-successful
+  #(let [modal-visible? (-> %
+                            :db
+                             ::db/exercise
+                             ::db/ui
+                             ::db/summary-modal
+                             ::common-db/visible)
+         dispatching? (:dispatch %)]
+     (if-not dispatching?
+       (not modal-visible?)
        true)))
 
 
@@ -834,7 +847,8 @@
  :args (s/cat :cofx ::common-events/coeffects
               :event ::exercise-loading-succeed-event)
  :ret (s/and ::common-events/effects
-             ::loader-hides-when-not-dispatching)
+             ::loader-hides-when-successful
+             ::summary-modal-invisible-when-successful)
  :fn (s/and ::exercise-state-loads
             ::exercise-loading-fails-on-invalid-time
             ::exercise-loading-fails-on-invalid-text))
@@ -869,6 +883,11 @@
                    (assoc-in [::db/exercise
                               ::db/ui
                               ::common-db/loader
+                              ::common-db/visible]
+                             false)
+                   (assoc-in [::db/exercise
+                              ::db/ui
+                              ::db/summary-modal
                               ::common-db/visible]
                              false)
                    (assoc-in [::db/exercise
